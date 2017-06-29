@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
-from tobiiglassescontroller import TobiiGlassesController
+from tobiiglasses.tobiiglassescontroller import TobiiGlassesController
 
 import sys
 
@@ -27,7 +27,7 @@ def main():
 	tobiiglasses.connect()
 
 	if tobiiglasses.is_connected():
-		tobiiglasses.disconnect()	
+		tobiiglasses.disconnect()
 
 
 if __name__ == '__main__':
