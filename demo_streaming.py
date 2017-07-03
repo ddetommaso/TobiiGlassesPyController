@@ -44,7 +44,7 @@ def main():
 		print "Gaze Position: %s " % tobiiglasses.get_data()['gp']
 		print "Gaze Position 3D: %s " % tobiiglasses.get_data()['gp3']
 
-	tobiiglasses.stop_logging()
+	tobiiglasses.stop_streaming()
 
 
 
