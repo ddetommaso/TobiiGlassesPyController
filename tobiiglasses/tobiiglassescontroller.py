@@ -33,7 +33,6 @@ class TobiiGlassesController():
 
 		self.timeout = 1
 		self.streaming = False
-		self.connected = False
 		self.udpport = udpport
 		self.address = address
 
@@ -50,10 +49,10 @@ class TobiiGlassesController():
 		self.project_creation_date = datetime.datetime.now().strftime("%m/%d/%y %H:%M:%S")
 		self.recn = 0
 
-		if self.address is None:
-			self.__discover_device__()
-		else:
+		if not self.address is None:
 			self.__set_address__(self.udpport, self.address)
+
+		self.__discover_device__()
 
 		# Keep-alive message content used to request live data streams
 		self.KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
@@ -183,10 +182,18 @@ class TobiiGlassesController():
 		json_data = json.loads(data)
 		return json_data
 
+	def __get_request__(self, api_action):
+
+		url = self.base_url + api_action
+		res = urllib2.urlopen(url)
+		data = json.load(res)
+		return data
+
+
 
 	def __discover_device__(self):
 
-		log.debug("Discovering a Tobii Pro Glasses 2 device ...")
+		log.debug("Discovering a Tobii Pro Glasses 2 device")
 		MULTICAST_ADDR = 'ff02::1'  # ipv6: all nodes on the local network segment
 		PORT = 13007
 		s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
@@ -194,37 +201,35 @@ class TobiiGlassesController():
 		s6.bind(('::', PORT))
 		s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, 13006))
 		data, address = s6.recvfrom(1024)
-		print "[%s]" % address[0]
+		log.debug("[%s]" % address[0])
 		self.__set_address__(self.udpport, "[%s]" % address[0].split("%")[0])
 		log.debug(" From: " + address[0] + " " + data)
 
 
 	def connect(self):
 
-		log.debug("Connecting to the Tobii Pro Glasses 2 ...")
+		log.debug("Connecting to the Tobii Pro Glasses 2")
 		try:
 			self.data_socket = self.__mksock__()
-			self.connected = True
-			log.debug("Tobii Pro Glasses 2 ... successful connected!")
+			log.debug("Tobii Pro Glasses 2 successful connected!")
 		except:
 			log.error("An error occurs trying to connect to the Tobii Pro Glasses")
 
-		return self.connected
+		return self.is_connected()
 
 	def disconnect(self):
-		log.debug("Disconnecting to the Tobii Pro Glasses 2 ...")
+		log.debug("Disconnecting to the Tobii Pro Glasses 2")
 		try:
 			self.data_socket.close()
-			self.connected = False
-			log.debug("... Tobii Pro Glasses 2 successful disconnected!")
+			log.debug("Tobii Pro Glasses 2 successful disconnected!")
 		except:
 			log.error("An error occurs closing the sockets of the Tobii Pro Glasses")
 
-		return not self.connected
+		return not self.is_connected()
 
 
 	def start_streaming(self):
-		log.debug("Start data streaming ...")
+		log.debug("Start data streaming")
 		try:
 			self.__start_streaming__()
 			log.debug("Data streaming successful started!")
@@ -232,7 +237,7 @@ class TobiiGlassesController():
 			log.error("An error occurs trying to connect to the Tobii Pro Glasses")
 
 	def stop_streaming(self):
-		log.debug("Stop data streaming ...")
+		log.debug("Stop data streaming")
 		try:
 			if self.streaming:
 				self.streaming = False
@@ -248,7 +253,7 @@ class TobiiGlassesController():
 		try:
 			status = self.wait_for_status('/api/system/status', 'sys_status', ['ok'])
 
-			if status == 'ok' and self.connected:
+			if status == 'ok':
 				res_connection = True
 			else:
 				res_connection = False
@@ -259,18 +264,22 @@ class TobiiGlassesController():
 		return res_connection
 
 
+	def is_streaming(self):
+
+		return self.streaming
+
 	def wait_for_status(self, api_action, key, values):
 
 		url = self.base_url + api_action
-		self.running = True
-		while self.running:
+		running = True
+		while running:
 			req = urllib2.Request(url)
 			req.add_header('Content-Type', 'application/json')
 			response = urllib2.urlopen(req, None)
 			data = response.read()
 			json_data = json.loads(data)
 			if json_data[key] in values:
-				self.running = False
+				running = False
 			time.sleep(1)
 
 		return json_data[key]
@@ -283,17 +292,46 @@ class TobiiGlassesController():
 			log.debug("Calibration " + calibration_id + " failed, using default calibration instead")
 			res_calibration = False
 		else:
-			log.debug("Calibration " + calibration_id + " successful")
+			log.debug("Calibration " + calibration_id + " done successful!")
 			res_calibration = True
 
 		return res_calibration
 
+	def get_recording_status(self, recording_id):
+
+		status = self.wait_for_status('/api/recordings/' + recording_id + '/status', 'rec_state', ['init', 'starting', 'recording', 'pausing', 'paused', 'stopping', 'stopped', 'done', 'stale', 'failed'])
+		return status
+
+
+	def is_recording_done(self, recording_id):
+
+		status = self.get_recording_status(recording_id)
+		return status == 'done'
+
+	def get_project_id(self, project_name):
+
+		project_id = None
+		projects = self.__get_request__('/api/projects')
+		for project in projects:
+			if project['pr_info']['Name'] == project_name:
+				project_id = project['pr_id']
+
+		return project_id
+
+
 
 	def create_project(self, projectname = "DefaultProjectName"):
 
-		data = {'pr_info' : {'CreationDate': self.project_creation_date, 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname.encode('utf-8'))), 'Name': projectname}}
-		json_data = self.__post_request__('/api/projects', data)
-		return json_data['pr_id']
+		project_id = self.get_project_id(projectname)
+
+		if project_id is None:
+			data = {'pr_info' : {'CreationDate': self.project_creation_date, 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname.encode('utf-8'))), 'Name': projectname}}
+			json_data = self.__post_request__('/api/projects', data)
+			log.debug("Project %s created!" % json_data['pr_id'])
+			return json_data['pr_id']
+		else:
+			log.debug("Project %s already exists" % project_id)
+			return project_id
 
 
 	def create_participant(self, project_id, participant_name = "DefaultUser", participant_notes = ""):
@@ -301,17 +339,20 @@ class TobiiGlassesController():
 		self.participant_name = participant_name
 		data = {'pa_project': project_id, 'pa_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))), 'Name': self.participant_name, 'Notes': participant_notes}}
 		json_data = self.__post_request__('/api/participants', data)
+		log.debug("Participant " + json_data['pa_id'] + " created! Project " + project_id)
 		return json_data['pa_id']
 
 	def create_calibration(self, project_id, participant_id):
 
 		data = {'ca_project': project_id, 'ca_type': 'default', 'ca_participant': participant_id}
 		json_data = self.__post_request__('/api/calibrations', data)
+		log.debug("Calibration " + json_data['ca_id'] + "created! Project: " + project_id + ", Participant: " + participant_id)
 		return json_data['ca_id']
 
 	def start_calibration(self, calibration_id):
 
 		self.__post_request__('/api/calibrations/' + calibration_id + '/start')
+		log.debug("Calibration " + calibration_id + " started")
 
 	def create_recording(self, participant_id, recording_notes = ""):
 

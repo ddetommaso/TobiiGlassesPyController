@@ -28,11 +28,6 @@ def main():
 
 	tobiiglasses.connect()
 
-	if not tobiiglasses.is_connected():
-		print("The Tobii Pro Glasses is not correctly connected!")
-		exit(1)
-
-	time.sleep(3)
 	tobiiglasses.start_streaming()
 
 	raw_input("Press a key to start streaming (1000 samples will be shown)")
