@@ -23,9 +23,7 @@ import time
 
 def main():
 
-	tobiiglasses = TobiiGlassesController(49152)
-
-	tobiiglasses.connect()
+	tobiiglasses = TobiiGlassesController()
 
 	project_name = raw_input("Please insert the project's name: ")
 	project_id = tobiiglasses.create_project(project_name)
@@ -37,8 +35,10 @@ def main():
 	raw_input("Put the calibration marker in front of the user, then press enter to calibrate")
 	tobiiglasses.start_calibration(calibration_id)
 
-	if not tobiiglasses.is_calibrated(calibration_id):
-		print "The calibration process failed!"
+	res = tobiiglasses.wait_until_is_calibrated(calibration_id)
+
+	if res is False:
+		print("Calibration failed!")
 		exit(1)
 
 	recording_id = tobiiglasses.create_recording(participant_id)
@@ -46,6 +46,11 @@ def main():
 	tobiiglasses.start_recording(recording_id)
 	raw_input("Press enter to stop recording")
 	tobiiglasses.stop_recording(recording_id)
+	res = tobiiglasses.wait_until_recording_is_done(recording_id)
+
+	if res is False:
+		print("Recording failed!")
+		exit(1)
 
 
 if __name__ == '__main__':

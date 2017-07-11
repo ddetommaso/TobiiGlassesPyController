@@ -22,13 +22,7 @@ import sys
 
 def main():
 
-	tobiiglasses = TobiiGlassesController(49152)
-
-	tobiiglasses.connect()
-
-	if tobiiglasses.is_connected():
-		tobiiglasses.disconnect()
-
+	tobiiglasses = TobiiGlassesController()
 
 if __name__ == '__main__':
     main()
