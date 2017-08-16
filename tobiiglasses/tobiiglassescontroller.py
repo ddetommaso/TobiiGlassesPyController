@@ -204,9 +204,10 @@ class TobiiGlassesController():
 		data, address = s6.recvfrom(1024)
 		log.debug("From: " + address[0] + " " + data)
 		log.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
-
-		return "[%s]" % address[0].split("%")[0]
-
+		try:
+		    return json.loads(data)["ipv4"]
+		except:
+		    return "[%s]" % address[0].split("%")[0]
 
 
 
@@ -234,6 +235,7 @@ class TobiiGlassesController():
 
 
 	def start_streaming(self):
+
 		log.debug("Start data streaming ...")
 		try:
 			self.__start_streaming__()
@@ -242,6 +244,7 @@ class TobiiGlassesController():
 			log.error("An error occurs trying to connect to the Tobii Pro Glasses")
 
 	def stop_streaming(self):
+
 		log.debug("Stop data streaming ...")
 		try:
 			if self.streaming:
