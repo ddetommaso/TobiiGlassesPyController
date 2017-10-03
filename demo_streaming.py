@@ -24,7 +24,7 @@ import json
 
 def main():
 
-	tobiiglasses = TobiiGlassesController()
+	tobiiglasses = TobiiGlassesController(49152, "fe80::76fe:48ff:fe19:fbe3%enp4s0")
 
 	tobiiglasses.start_streaming()
 

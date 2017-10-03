@@ -49,27 +49,37 @@ class TobiiGlassesController():
 		self.project_creation_date = datetime.datetime.now().strftime("%m/%d/%y %H:%M:%S")
 		self.recn = 0
 
-		if self.address is None:
-			self.address = self.__discover_device__()
+		self.KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
 
-		self.__set_address__(self.udpport, self.address)
+		if self.address is None:
+			addr = self.__discover_device__()
+			if addr is None:
+				quit()
+			else:
+				self.address = self.__discover_device__()
+		else:
+			self.__set_address__(self.udpport, self.address)
 
 		self.__connect__()
 
-		self.KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
+
 
 	def __set_address__(self, udpport, address):
 
-		self.base_url = 'http://' + address
+		if ':' in address:
+			self.base_url = 'http://[%s]' % address
+		else:
+			self.base_url = 'http://' + address
+
 		self.peer = (address, udpport)
 
 
 	def __del__(self):
 
-		if self.streaming:
-			self.stop_streaming()
-
-		self.__disconnect__()
+		if self.address is not None:
+			if self.streaming:
+				self.stop_streaming()
+			self.__disconnect__()
 
 
 	def __mksock__(self):
@@ -77,7 +87,9 @@ class TobiiGlassesController():
 		iptype = socket.AF_INET
 		if ':' in self.peer[0]:
 			iptype = socket.AF_INET6
-		return socket.socket(iptype, socket.SOCK_DGRAM)
+		res = socket.getaddrinfo(self.peer[0], self.peer[1], socket.AF_UNSPEC, socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
+		sock = socket.socket(res[0][0], res[0][1], res[0][2])
+		return sock
 
 
 	def __send_keepalive_msg__(self, socket, msg):
@@ -197,18 +209,21 @@ class TobiiGlassesController():
 		log.debug("Discovering a Tobii Pro Glasses 2 device ...")
 		MULTICAST_ADDR = 'ff02::1'  # ipv6: all nodes on the local network segment
 		PORT = 13007
-		s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-		s6.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		s6.bind(('::', PORT))
-		s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, 13006))
-		data, address = s6.recvfrom(1024)
-		log.debug("From: " + address[0] + " " + data)
-		log.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
 		try:
-		    return json.loads(data)["ipv4"]
-		except:
-		    return "[%s]" % address[0].split("%")[0]
+			s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+			s6.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			s6.bind(('::', PORT))
+			s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, 13006))
+			log.debug("Discover request sent to " + MULTICAST_ADDR)
+			log.debug("Waiting response from a device ...")
+			data, address = s6.recvfrom(1024)
+			log.debug("From: " + address[0] + " " + data)
+			log.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
+			return address[0]
 
+		except:
+			log.error("Device non reachable or address not valid")
+			return None
 
 
 	def __connect__(self):
