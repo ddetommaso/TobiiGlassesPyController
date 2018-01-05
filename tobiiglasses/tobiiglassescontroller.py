@@ -23,6 +23,7 @@ import threading
 import socket
 import uuid
 import logging as log
+import struct
 
 log.basicConfig(format='[%(levelname)s]: %(message)s', level=log.DEBUG)
 
@@ -55,10 +56,9 @@ class TobiiGlassesController():
 			addr = self.__discover_device__()
 			if addr is None:
 				quit()
-			else:
-				self.address = self.__discover_device__()
-		else:
-			self.__set_address__(self.udpport, self.address)
+                        else:
+				self.address = addr
+                self.__set_address__(self.udpport, self.address)
 
 		self.__connect__()
 
@@ -210,9 +210,10 @@ class TobiiGlassesController():
 		MULTICAST_ADDR = 'ff02::1'  # ipv6: all nodes on the local network segment
 		PORT = 13007
 		try:
+			s = socket.inet_pton(socket.AF_INET6, "ff02::1")
 			s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-			s6.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			s6.bind(('::', PORT))
+			s6.bind(('', PORT))
+			s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP,socket.inet_pton(socket.AF_INET6, "ff02::1")+'\0'*4)
 			s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, 13006))
 			log.debug("Discover request sent to " + MULTICAST_ADDR)
 			log.debug("Waiting response from a device ...")
