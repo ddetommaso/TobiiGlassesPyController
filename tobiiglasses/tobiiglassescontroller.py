@@ -24,6 +24,9 @@ import socket
 import uuid
 import logging as log
 import struct
+import sys
+
+socket.IPPROTO_IPV6 = 41
 
 log.basicConfig(format='[%(levelname)s]: %(message)s', level=log.DEBUG)
 
@@ -53,19 +56,20 @@ class TobiiGlassesController():
 		self.KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
 
 		if self.address is None:
-			addr = self.__discover_device__()
-			if addr is None:
+			data, address = self.__discover_device__()
+			if address is None:
 				quit()
-                        else:
-				self.address = addr
-                self.__set_address__(self.udpport, self.address)
-
+			else:
+				try:
+					self.address = data["ipv4"]
+				except:
+					self.address = address.split('%')[0]
+		self.__set_URL__(self.udpport, self.address)
 		self.__connect__()
 
 
 
-	def __set_address__(self, udpport, address):
-
+	def __set_URL__(self, udpport, address):
 		if ':' in address:
 			self.base_url = 'http://[%s]' % address
 		else:
@@ -207,25 +211,23 @@ class TobiiGlassesController():
 	def __discover_device__(self):
 
 		log.debug("Discovering a Tobii Pro Glasses 2 device ...")
-		MULTICAST_ADDR = 'ff02::1'  # ipv6: all nodes on the local network segment
-		PORT = 13007
+		MULTICAST_ADDR = 'ff02::1'
+		PORT = 13006
 		try:
-			s = socket.inet_pton(socket.AF_INET6, "ff02::1")
 			s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-			s6.bind(('', PORT))
-			s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_JOIN_GROUP,socket.inet_pton(socket.AF_INET6, "ff02::1")+'\0'*4)
-			s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, 13006))
+			s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, 11)
+			s6.bind(('::', PORT))
+			s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, PORT))
 			log.debug("Discover request sent to " + MULTICAST_ADDR)
 			log.debug("Waiting response from a device ...")
 			data, address = s6.recvfrom(1024)
+			jdata = json.loads(data)
 			log.debug("From: " + address[0] + " " + data)
-			log.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
-			return address[0]
-
-		except:
-			log.error("Device non reachable or address not valid")
+			log.debug("Tobii Pro Glasses found with address: %s" % address[0])
+			return (jdata, address[0])
+		except Exception as inst:
+			log.error("An exception occurs connecting with the device. Details: " + str(inst))
 			return None
-
 
 	def __connect__(self):
 

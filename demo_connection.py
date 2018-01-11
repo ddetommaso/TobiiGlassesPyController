@@ -23,6 +23,7 @@ import sys
 def main():
 
 	tobiiglasses = TobiiGlassesController()
+	#tobiiglasses = TobiiGlassesController(49152, "fe80::76fe:48ff:fe19:fbe3%18")
 
 if __name__ == '__main__':
     main()
