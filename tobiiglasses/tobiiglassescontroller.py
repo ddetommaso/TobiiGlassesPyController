@@ -33,12 +33,13 @@ log.basicConfig(format='[%(levelname)s]: %(message)s', level=log.DEBUG)
 
 class TobiiGlassesController():
 
-	def __init__(self, udpport = 49152, address =  None):
+	def __init__(self, if_name = None, address = None):
 
 		self.timeout = 1
 		self.streaming = False
-		self.udpport = udpport
+		self.udpport = 49152
 		self.address = address
+		self.if_name = if_name
 
 		self.data = {}
 		nd = {'ts': -1}
@@ -56,14 +57,14 @@ class TobiiGlassesController():
 		self.KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
 
 		if self.address is None:
-			data, address = self.__discover_device__()
+			data, address = self.__discover_device__(self.if_name)
 			if address is None:
 				quit()
 			else:
 				try:
 					self.address = data["ipv4"]
 				except:
-					self.address = address.split('%')[0]
+					self.address = address
 		self.__set_URL__(self.udpport, self.address)
 		self.__connect__()
 
@@ -208,22 +209,27 @@ class TobiiGlassesController():
 
 
 
-	def __discover_device__(self):
+	def __discover_device__(self, if_name):
 
-		log.debug("Discovering a Tobii Pro Glasses 2 device ...")
+		log.debug("Discovering a Tobii Pro Glasses 2 device on %s interface ..." %  (if_name if if_name else "default") )
 		MULTICAST_ADDR = 'ff02::1'
 		PORT = 13006
 		try:
 			s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-			s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, 11)
+			if if_name:
+			    if_idx = socket.getaddrinfo(MULTICAST_ADDR + "%" + if_name, PORT, socket.AF_INET6, socket.SOCK_DGRAM)[0][4][3]
+			else:
+			    if_idx = socket.getaddrinfo(MULTICAST_ADDR, PORT, socket.AF_INET6, socket.SOCK_DGRAM)[0][4][3]
+			s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, if_idx)
 			s6.bind(('::', PORT))
-			s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, PORT))
+			PORT_OUT = PORT if sys.platform == 'win32' else PORT + 1
+			s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, PORT_OUT))
 			log.debug("Discover request sent to " + MULTICAST_ADDR)
 			log.debug("Waiting response from a device ...")
 			data, address = s6.recvfrom(1024)
 			jdata = json.loads(data)
 			log.debug("From: " + address[0] + " " + data)
-			log.debug("Tobii Pro Glasses found with address: %s" % address[0])
+			log.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
 			return (jdata, address[0])
 		except Exception as inst:
 			log.error("An exception occurs connecting with the device. Details: " + str(inst))

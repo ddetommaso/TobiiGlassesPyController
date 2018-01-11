@@ -22,8 +22,11 @@ import sys
 
 def main():
 
-	tobiiglasses = TobiiGlassesController()
-	#tobiiglasses = TobiiGlassesController(49152, "fe80::76fe:48ff:fe19:fbe3%18")
+	TobiiGlassesController()
+	#TobiiGlassesController("enp0s31f6")
+	#TobiiGlassesController(None, "fe80::76fe:48ff:fe19:fbe3%enp0s31f6")
+	#TobiiGlassesController(None, "192.168.71.50")
+
 
 if __name__ == '__main__':
     main()
