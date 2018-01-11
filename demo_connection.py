@@ -23,9 +23,15 @@ import sys
 def main():
 
 	TobiiGlassesController()
-	#TobiiGlassesController("enp0s31f6")
-	#TobiiGlassesController(None, "fe80::76fe:48ff:fe19:fbe3%enp0s31f6")
-	#TobiiGlassesController(None, "192.168.71.50")
+
+	"""
+		other ways to connect with the tobii glasses
+
+	TobiiGlassesController("eth0") #eth0 is the net interface of your host system connected to the tobii glasses
+	TobiiGlassesController(None, "fe80::76fe:48ff:ff00:hell%eth0") #if you know the ipv6 addr of the tobii glasses and the net interface of your host system
+	TobiiGlassesController(None, "192.168.71.50") #if you know the ipv4 addr of the tobii glasses (in case of wifi connection)
+
+	"""
 
 
 if __name__ == '__main__':

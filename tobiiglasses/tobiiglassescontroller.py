@@ -64,7 +64,10 @@ class TobiiGlassesController():
 				try:
 					self.address = data["ipv4"]
 				except:
-					self.address = address
+					if sys.platform == "win32":
+						self.address = address.split("%")[0]
+					else:
+						self.address = address
 		self.__set_URL__(self.udpport, self.address)
 		self.__connect__()
 
