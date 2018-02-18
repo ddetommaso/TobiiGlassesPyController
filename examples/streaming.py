@@ -1,6 +1,6 @@
-# demo_streaming_and_logging.py : A demo for live streaming eye-tracker data and logging in a specified file
+# streaming.py : A demo for live streaming eye-tracker data
 #
-# Copyright (C) 2017  Davide De Tommaso
+# Copyright (C) 2018  Davide De Tommaso
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
-from tobiiglasses.tobiiglassescontroller import TobiiGlassesController
+from tobiiglassesctrl import TobiiGlassesController
 
 import sys
 import time

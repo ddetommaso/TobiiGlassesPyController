@@ -199,9 +199,12 @@ class TobiiGlassesController():
 		req.add_header('Content-Type', 'application/json')
 		data = json.dumps(data)
 		response = urllib2.urlopen(req, data)
-		data = response.read()
-		json_data = json.loads(data)
-		return json_data
+		res = response.read()
+		try:
+			res = json.loads(res)
+		except:
+			pass
+		return res
 
 	def __get_request__(self, api_action):
 
@@ -409,6 +412,10 @@ class TobiiGlassesController():
 
 	def stop_recording(self, recording_id):
 		self.__post_request__('/api/recordings/' + recording_id + '/stop')
+
+	def send_event(self, event_type, event_tag = ''):
+		data = {'ets': time.time(), 'type': event_type, 'tag': event_tag}
+		return self.__post_request__('/api/events', data)
 
 	def get_data(self):
 		return self.data

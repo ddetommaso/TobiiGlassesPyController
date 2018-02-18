@@ -1,0 +1,37 @@
+A Python controller for Tobii Pro Glasses 2
+=======================
+
+A Python controller for accessing eye-tracker data and managing recordings,
+participants and calibrations using the wearable Tobii Pro Glasses 2.
+The code is based on the Tobii Pro Glasses 2 APIs available at:
+
+https://www.tobiipro.com/product-listing/tobii-pro-glasses-2-sdk/
+
+This project is available on Github at:
+
+https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl
+
+### Package installation
+
+
+$ pip install tobiiglassesctrl
+
+or
+
+$ python -m pip install --upgrade tobiiglassesctrl
+
+
+### Tobii Pro Glasses 2 Connection
+
+Connect the glasses through Wifi or Ethernet connection. In case of Ethernet
+connection be sure that it is configured as link-local IPv6.
+
+
+
+### Python Examples
+
+The following Python examples are available in the directory 'examples':
+
+- connect.py - A Python script to connect with the eye-tracker.
+- calibrate_and_record.py - A Python script for managing calibrations and recordings.
+- streaming.py - A Python script for receiving live data from the eye-tracker

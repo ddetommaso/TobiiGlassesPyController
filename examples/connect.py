@@ -1,6 +1,6 @@
-# demo_connection.py : A demo code for connecting with the Tobii Pro Glasses 2
+# connect.py : A demo code for connecting with the Tobii Pro Glasses 2
 #
-# Copyright (C) 2017  Davide De Tommaso
+# Copyright (C) 2018  Davide De Tommaso
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
-from tobiiglasses.tobiiglassescontroller import TobiiGlassesController
+from tobiiglassesctrl import TobiiGlassesController
 
 import sys
 
@@ -25,7 +25,7 @@ def main():
 	TobiiGlassesController()
 
 	"""
-		other ways to connect with the tobii glasses
+	other ways to connect with the tobii glasses
 
 	TobiiGlassesController("eth0") #eth0 is the net interface of your host system connected to the tobii glasses
 	TobiiGlassesController(None, "fe80::76fe:48ff:ff00:hell%eth0") #if you know the ipv6 addr of the tobii glasses and the net interface of your host system

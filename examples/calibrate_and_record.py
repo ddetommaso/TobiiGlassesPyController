@@ -1,6 +1,6 @@
-# demo_connection.py : A demo code for connecting with the Tobii Pro Glasses 2
+# calibrate_and_record.py : A demo code for connecting with the Tobii Pro Glasses 2
 #
-# Copyright (C) 2017  Davide De Tommaso
+# Copyright (C) 2018  Davide De Tommaso
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
-from tobiiglasses.tobiiglassescontroller import TobiiGlassesController
+from tobiiglassesctrl import TobiiGlassesController
 
 import sys
 import time
@@ -24,7 +24,6 @@ import time
 def main():
 
 	tobiiglasses = TobiiGlassesController()
-
 	project_name = raw_input("Please insert the project's name: ")
 	project_id = tobiiglasses.create_project(project_name)
 
@@ -44,14 +43,15 @@ def main():
 	recording_id = tobiiglasses.create_recording(participant_id)
 	raw_input("Press enter to start recording")
 	tobiiglasses.start_recording(recording_id)
+	tobiiglasses.send_event("start_recording", "Start of the recording ")
 	raw_input("Press enter to stop recording")
 	tobiiglasses.stop_recording(recording_id)
+	tobiiglasses.send_event("stop_recording", "Stop of the recording " + str(recording_id))
 	res = tobiiglasses.wait_until_recording_is_done(recording_id)
 
 	if res is False:
 		print("Recording failed!")
 		exit(1)
-
 
 if __name__ == '__main__':
     main()
