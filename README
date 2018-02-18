@@ -11,7 +11,9 @@ This project is available on Github at:
 
 https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl
 
-### Package installation
+
+Package installation
+=======================
 
 
 $ pip install tobiiglassesctrl
@@ -21,14 +23,16 @@ or
 $ python -m pip install --upgrade tobiiglassesctrl
 
 
-### Tobii Pro Glasses 2 Connection
+Tobii Pro Glasses 2 Connection
+=======================
 
 Connect the glasses through Wifi or Ethernet connection. In case of Ethernet
 connection be sure that it is configured as link-local IPv6.
 
 
 
-### Python Examples
+Python Examples
+=======================
 
 The following Python examples are available in the directory 'examples':
 
