@@ -34,7 +34,6 @@ log.basicConfig(format='[%(levelname)s]: %(message)s', level=log.DEBUG)
 class TobiiGlassesController():
 
 	def __init__(self, if_name = None, address = None):
-
 		self.timeout = 1
 		self.streaming = False
 		self.udpport = 49152
@@ -83,7 +82,6 @@ class TobiiGlassesController():
 
 
 	def __del__(self):
-
 		if self.address is not None:
 			if self.streaming:
 				self.stop_streaming()
@@ -91,7 +89,6 @@ class TobiiGlassesController():
 
 
 	def __mksock__(self):
-
 		iptype = socket.AF_INET
 		if ':' in self.peer[0]:
 			iptype = socket.AF_INET6
@@ -101,14 +98,12 @@ class TobiiGlassesController():
 
 
 	def __send_keepalive_msg__(self, socket, msg):
-
 		while self.streaming:
 			socket.sendto(msg, self.peer)
 			time.sleep(self.timeout)
 
 
 	def __grab_data__(self, socket):
-
 		time.sleep(1)
 		while self.streaming:
 			data, address = socket.recvfrom(1024)
@@ -118,7 +113,6 @@ class TobiiGlassesController():
 
 
 	def __refresh_data__(self, jsondata):
-
 		try:
 			gy = jsondata['gy']
 			ts = jsondata['ts']
@@ -181,7 +175,6 @@ class TobiiGlassesController():
 
 
 	def __start_streaming__(self):
-
 		try:
 			self.streaming = True
 			self.td = threading.Timer(0, self.__send_keepalive_msg__, [self.data_socket, self.KA_DATA_MSG])
@@ -193,13 +186,14 @@ class TobiiGlassesController():
 			log.error("An error occurs trying to create the threads for receiving data")
 
 	def __post_request__(self, api_action, data=None):
-
 		url = self.base_url + api_action
 		req = urllib2.Request(url)
 		req.add_header('Content-Type', 'application/json')
 		data = json.dumps(data)
+		log.debug("Sending JSON: " + str(data))
 		response = urllib2.urlopen(req, data)
 		res = response.read()
+		log.debug("Response: " + str(res))
 		try:
 			res = json.loads(res)
 		except:
@@ -207,7 +201,6 @@ class TobiiGlassesController():
 		return res
 
 	def __get_request__(self, api_action):
-
 		url = self.base_url + api_action
 		res = urllib2.urlopen(url)
 		data = json.load(res)
@@ -216,7 +209,6 @@ class TobiiGlassesController():
 
 
 	def __discover_device__(self, if_name):
-
 		log.debug("Discovering a Tobii Pro Glasses 2 device on %s interface ..." %  (if_name if if_name else "default") )
 		MULTICAST_ADDR = 'ff02::1'
 		PORT = 13006
@@ -242,7 +234,6 @@ class TobiiGlassesController():
 			return None
 
 	def __connect__(self):
-
 		log.debug("Connecting to the Tobii Pro Glasses 2 ...")
 		self.data_socket = self.__mksock__()
 
@@ -255,17 +246,14 @@ class TobiiGlassesController():
 		return res
 
 	def __disconnect__(self):
-
 		log.debug("Disconnecting to the Tobii Pro Glasses 2 ...")
 		self.data_socket.close()
 		log.debug("... Tobii Pro Glasses 2 successful disconnected!")
-
 		return True
 
 
 
 	def start_streaming(self):
-
 		log.debug("Start data streaming ...")
 		try:
 			self.__start_streaming__()
@@ -274,7 +262,6 @@ class TobiiGlassesController():
 			log.error("An error occurs trying to connect to the Tobii Pro Glasses")
 
 	def stop_streaming(self):
-
 		log.debug("Stop data streaming ...")
 		try:
 			if self.streaming:
@@ -287,7 +274,6 @@ class TobiiGlassesController():
 
 
 	def wait_until_status_is_ok(self):
-
 		status = self.wait_for_status('/api/system/status', 'sys_status', ['ok'])
 
 		if status == 'ok':
@@ -297,11 +283,9 @@ class TobiiGlassesController():
 
 
 	def is_streaming(self):
-
 		return self.streaming
 
 	def wait_for_status(self, api_action, key, values):
-
 		url = self.base_url + api_action
 		running = True
 		while running:
@@ -316,30 +300,7 @@ class TobiiGlassesController():
 
 		return json_data[key]
 
-	def wait_until_is_calibrated(self, calibration_id):
-
-		status = self.wait_for_status('/api/calibrations/' + calibration_id + '/status', 'ca_state', ['calibrated', 'failed'])
-
-		if status == 'calibrated':
-			log.debug("Calibration %s successful " % calibration_id)
-			return True
-		else:
-			log.debug("Calibration %s failed " % calibration_id)
-			return False
-
-	def wait_until_recording_is_done(self, recording_id):
-
-		status = self.wait_for_status('/api/recordings/' + recording_id + '/status', 'rec_state', ['done', 'failed'])
-
-		if status == 'done':
-			log.debug("Recording %s successfully stored" % recording_id)
-			return True
-		else:
-			log.debug("Recording %s failed" % recording_id)
-			return False
-
 	def get_project_id(self, project_name):
-
 		project_id = None
 		projects = self.__get_request__('/api/projects')
 		for project in projects:
@@ -349,7 +310,6 @@ class TobiiGlassesController():
 		return project_id
 
 	def get_participant_id(self, participant_name):
-
 		participant_id = None
 		participants = self.__get_request__('/api/participants')
 		for participant in participants:
@@ -360,7 +320,6 @@ class TobiiGlassesController():
 
 
 	def create_project(self, projectname = "DefaultProjectName"):
-
 		project_id = self.get_project_id(projectname)
 
 		if project_id is None:
@@ -374,7 +333,6 @@ class TobiiGlassesController():
 
 
 	def create_participant(self, project_id, participant_name = "DefaultUser", participant_notes = ""):
-
 		participant_id = self.get_participant_id(participant_name)
 		self.participant_name = participant_name
 
@@ -388,34 +346,55 @@ class TobiiGlassesController():
 			return participant_id
 
 	def create_calibration(self, project_id, participant_id):
-
 		data = {'ca_project': project_id, 'ca_type': 'default', 'ca_participant': participant_id}
 		json_data = self.__post_request__('/api/calibrations', data)
 		log.debug("Calibration " + json_data['ca_id'] + "created! Project: " + project_id + ", Participant: " + participant_id)
 		return json_data['ca_id']
 
-	def start_calibration(self, calibration_id):
+	def wait_until_calibration_is_done(self, calibration_id):
+		status = self.wait_for_calibration_status(calibration_id, ['calibrated', 'uncalibrated'])
+		if status == 'calibrated':
+			log.debug("Calibration %s successful " % calibration_id)
+			return True
+		else:
+			log.debug("Calibration %s failed " % calibration_id)
+			return False
 
+
+	def wait_for_calibration_status(self, calibration_id, status_array = ['calibrating', 'calibrated', 'stale', 'uncalibrated']):
+		return self.wait_for_status('/api/calibrations/' + calibration_id + '/status', 'ca_state', status_array)
+
+	def start_calibration(self, calibration_id):
 		self.__post_request__('/api/calibrations/' + calibration_id + '/start')
-		log.debug("Calibration " + calibration_id + " started...")
+		return self.wait_for_calibration_status(calibration_id, ['calibrating'])
 
 	def create_recording(self, participant_id, recording_notes = ""):
-
 		self.recn = self.recn + 1
 		recording_name = "Recording" + str(self.recn)
 		data = {'rec_participant': participant_id, 'rec_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))), 'Name': recording_name, 'Notes': recording_notes}}
 		json_data = self.__post_request__('/api/recordings', data)
 		return json_data['rec_id']
 
+	def wait_for_recording_status(self, recording_id, status_array = ['init', 'starting',
+	'recording', 'pausing', 'paused', 'stopping', 'stopped', 'done', 'stale', 'failed']):
+		return self.wait_for_status('/api/recordings/' + recording_id + '/status', 'rec_state', status_array)
+
 	def start_recording(self, recording_id):
 		self.__post_request__('/api/recordings/' + recording_id + '/start')
+		return self.wait_for_recording_status(recording_id, ['recording']) == "recording"
 
 	def stop_recording(self, recording_id):
 		self.__post_request__('/api/recordings/' + recording_id + '/stop')
+		return self.wait_for_recording_status(recording_id, ['done']) == "done"
+
+	def pause_recording(self, recording_id):
+		self.__post_request__('/api/recordings/' + recording_id + '/pause')
+		return self.wait_for_recording_status(recording_id, ['paused']) == "paused"
 
 	def send_event(self, event_type, event_tag = ''):
-		data = {'ets': time.time(), 'type': event_type, 'tag': event_tag}
-		return self.__post_request__('/api/events', data)
+		data = {'type': event_type, 'tag': event_tag}
+		self.__post_request__('/api/events', data)
+		return self.wait_until_status_is_ok()
 
 	def get_data(self):
 		return self.data
