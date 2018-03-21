@@ -24,6 +24,12 @@ import time
 def main():
 
 	tobiiglasses = TobiiGlassesController()
+	print tobiiglasses.get_battery_info()
+
+	if tobiiglasses.is_recording():
+		rec_id = tobiiglasses.get_current_recording_id()
+		tobiiglasses.stop_recording(rec_id)
+
 	project_name = raw_input("Please insert the project's name: ")
 	project_id = tobiiglasses.create_project(project_name)
 
@@ -34,7 +40,7 @@ def main():
 	raw_input("Put the calibration marker in front of the user, then press enter to calibrate")
 	tobiiglasses.start_calibration(calibration_id)
 
-	res = tobiiglasses.wait_until_is_calibrated(calibration_id)
+	res = tobiiglasses.wait_until_calibration_is_done(calibration_id)
 
 	if res is False:
 		print("Calibration failed!")
@@ -45,9 +51,9 @@ def main():
 	tobiiglasses.start_recording(recording_id)
 	tobiiglasses.send_event("start_recording", "Start of the recording ")
 	raw_input("Press enter to stop recording")
-	tobiiglasses.stop_recording(recording_id)
 	tobiiglasses.send_event("stop_recording", "Stop of the recording " + str(recording_id))
-	res = tobiiglasses.wait_until_recording_is_done(recording_id)
+	tobiiglasses.stop_recording(recording_id)
+
 
 	if res is False:
 		print("Recording failed!")

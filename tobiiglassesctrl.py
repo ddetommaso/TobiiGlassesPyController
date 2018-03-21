@@ -50,7 +50,7 @@ class TobiiGlassesController():
 
 		self.project_id = str(uuid.uuid4())
 		self.project_name = "TobiiProGlasses PyController"
-		self.project_creation_date = datetime.datetime.now().strftime("%m/%d/%y %H:%M:%S")
+		self.project_creation_date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 		self.recn = 0
 
 		self.KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
@@ -306,7 +306,6 @@ class TobiiGlassesController():
 		for project in projects:
 			if project['pr_info']['Name'] == project_name:
 				project_id = project['pr_id']
-
 		return project_id
 
 	def get_participant_id(self, participant_name):
@@ -315,9 +314,35 @@ class TobiiGlassesController():
 		for participant in participants:
 			if participant['pa_info']['Name'] == participant_name:
 				participant_id = participant['pa_id']
-
 		return participant_id
 
+	def get_status(self):
+		return self.__get_request__('/api/system/status')
+
+	def get_battery_status(self):
+		return self.get_status()['sys_battery']
+
+	def get_battery_level(self):
+		return self.get_battery_status()['level']
+
+	def get_battery_remaining_time(self):
+		return self.get_battery_status()['remaining_time']
+
+	def get_battery_info(self):
+		return ( "Battery info = [ Level: %.2f %% - Remaining Time: %.2f s ]" % (float(self.get_battery_level()), float(self.get_battery_remaining_time())) )
+
+	def get_recording_status(self):
+		return self.get_status()['sys_recording']
+
+	def is_recording(self):
+		rec_status = self.get_recording_status()
+		if rec_status != {}:
+			if rec_status['rec_state'] == "recording":
+				return True
+		return False
+
+	def get_current_recording_id(self):
+		return self.get_recording_status()['rec_id']
 
 	def create_project(self, projectname = "DefaultProjectName"):
 		project_id = self.get_project_id(projectname)
@@ -352,21 +377,18 @@ class TobiiGlassesController():
 		return json_data['ca_id']
 
 	def wait_until_calibration_is_done(self, calibration_id):
-		status = self.wait_for_calibration_status(calibration_id, ['calibrated', 'uncalibrated'])
-		if status == 'calibrated':
-			log.debug("Calibration %s successful " % calibration_id)
-			return True
-		else:
-			log.debug("Calibration %s failed " % calibration_id)
-			return False
-
-
-	def wait_for_calibration_status(self, calibration_id, status_array = ['calibrating', 'calibrated', 'stale', 'uncalibrated']):
-		return self.wait_for_status('/api/calibrations/' + calibration_id + '/status', 'ca_state', status_array)
+		while True:
+			status = self.wait_for_status('/api/calibrations/' + calibration_id + '/status', 'ca_state', ['calibrating', 'calibrated', 'stale', 'uncalibrated', 'failed'])
+			log.debug("Calibration status %s" % status)
+			if status == 'uncalibrated' or status == 'stale' or status == 'failed':
+				log.debug("Calibration %s failed " % calibration_id)
+				return False
+			elif status == 'calibrated':
+				log.debug("Calibration %s successful " % calibration_id)
+				return True
 
 	def start_calibration(self, calibration_id):
 		self.__post_request__('/api/calibrations/' + calibration_id + '/start')
-		return self.wait_for_calibration_status(calibration_id, ['calibrating'])
 
 	def create_recording(self, participant_id, recording_notes = ""):
 		self.recn = self.recn + 1
