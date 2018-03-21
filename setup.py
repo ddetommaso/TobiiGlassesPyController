@@ -16,10 +16,10 @@ setup(
     version='1.1.3',
     description='A Python controller for Tobii Pro Glasses 2',
     url='https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl',
-    download_url='https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl/archive/master.zip',
+    download_url='https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl/archive/1.1.3.tar.gz',
     author='Davide De Tommaso',
     author_email='dtmdvd@gmail.com',
-    keywords=['eye-tracker','tobii','glasses', 'tobii pro glasses 2'],
+    keywords=['eye-tracker','tobii','glasses', 'tobii pro glasses 2', 'tobii glasses', 'eye tracking'],
     py_modules=["tobiiglassesctrl"],
     classifiers = [],
 )
