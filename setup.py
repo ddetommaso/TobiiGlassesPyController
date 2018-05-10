@@ -13,10 +13,11 @@ with open(path.join(here, 'README'), encoding='utf-8') as f:
 
 setup(
     name='tobiiglassesctrl',
-    version='1.1.4',
+    version='1.1.5',
     description='A Python controller for Tobii Pro Glasses 2',
     url='https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl',
-    download_url='https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl/archive/1.1.4.tar.gz',
+    download_url='https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl/archive/1.1.5.tar.gz',
+    install_requires=['netifaces'],
     author='Davide De Tommaso',
     author_email='dtmdvd@gmail.com',
     keywords=['eye-tracker','tobii','glasses', 'tobii pro glasses 2', 'tobii glasses', 'eye tracking'],
