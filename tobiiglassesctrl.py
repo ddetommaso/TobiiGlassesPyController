@@ -25,6 +25,8 @@ import uuid
 import logging as log
 import struct
 import sys
+import netifaces
+import select
 
 socket.IPPROTO_IPV6 = 41
 
@@ -33,12 +35,11 @@ log.basicConfig(format='[%(levelname)s]: %(message)s', level=log.DEBUG)
 
 class TobiiGlassesController():
 
-	def __init__(self, if_name = None, address = None):
+	def __init__(self, address = None):
 		self.timeout = 1
 		self.streaming = False
 		self.udpport = 49152
 		self.address = address
-		self.if_name = if_name
 
 		self.data = {}
 		nd = {'ts': -1}
@@ -56,28 +57,26 @@ class TobiiGlassesController():
 		self.KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
 
 		if self.address is None:
-			data, address = self.__discover_device__(self.if_name)
+			data, address = self.__discover_device__()
 			if address is None:
 				quit()
 			else:
 				try:
 					self.address = data["ipv4"]
 				except:
-					if sys.platform == "win32":
-						self.address = address.split("%")[0]
-					else:
-						self.address = address
+					self.address = address
 		self.__set_URL__(self.udpport, self.address)
 		self.__connect__()
 
 
 
 	def __set_URL__(self, udpport, address):
+		if "%" in address and sys.platform == "win32":
+			address = address.split("%")[0]
 		if ':' in address:
 			self.base_url = 'http://[%s]' % address
 		else:
 			self.base_url = 'http://' + address
-
 		self.peer = (address, udpport)
 
 
@@ -206,32 +205,35 @@ class TobiiGlassesController():
 		data = json.load(res)
 		return data
 
-
-
-	def __discover_device__(self, if_name):
-		log.debug("Discovering a Tobii Pro Glasses 2 device on %s interface ..." %  (if_name if if_name else "default") )
+	def __discover_device__(self):
+		log.debug("Looking for a Tobii Pro Glasses 2 device ...")
 		MULTICAST_ADDR = 'ff02::1'
 		PORT = 13006
-		try:
-			s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-			if if_name:
-			    if_idx = socket.getaddrinfo(MULTICAST_ADDR + "%" + if_name, PORT, socket.AF_INET6, socket.SOCK_DGRAM)[0][4][3]
-			else:
-			    if_idx = socket.getaddrinfo(MULTICAST_ADDR, PORT, socket.AF_INET6, socket.SOCK_DGRAM)[0][4][3]
-			s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, if_idx)
-			s6.bind(('::', PORT))
-			PORT_OUT = PORT if sys.platform == 'win32' else PORT + 1
-			s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, PORT_OUT))
-			log.debug("Discover request sent to " + MULTICAST_ADDR)
-			log.debug("Waiting response from a device ...")
-			data, address = s6.recvfrom(1024)
-			jdata = json.loads(data)
-			log.debug("From: " + address[0] + " " + data)
-			log.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
-			return (jdata, address[0])
-		except Exception as inst:
-			log.error("An exception occurs connecting with the device. Details: " + str(inst))
-			return None
+
+		for i in netifaces.interfaces():
+			if netifaces.ifaddresses(i).has_key(netifaces.AF_INET6):
+				if "%" in netifaces.ifaddresses(i)[netifaces.AF_INET6][0]['addr']:
+					if_name = netifaces.ifaddresses(i)[netifaces.AF_INET6][0]['addr'].split("%")[1]
+					if_idx = socket.getaddrinfo(MULTICAST_ADDR + "%" + if_name, PORT, socket.AF_INET6, socket.SOCK_DGRAM)[0][4][3]
+					s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+					s6.settimeout(1.0)
+					s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, if_idx)
+					s6.bind(('::', PORT))
+					PORT_OUT = PORT if sys.platform == 'win32' else PORT + 1
+					try:
+						s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, PORT_OUT))
+						log.debug("Discover request sent to %s on interface %s " % ( str((MULTICAST_ADDR, PORT_OUT)),if_name) )
+						log.debug("Waiting response from a device ...")
+						data, address = s6.recvfrom(1024)
+						jdata = json.loads(data)
+						log.debug("From: " + address[0] + " " + data)
+						log.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
+						return (jdata, address[0])
+					except:
+						pass
+
+		log.debug("No device found!")
+		return (None, None)
 
 	def __connect__(self):
 		log.debug("Connecting to the Tobii Pro Glasses 2 ...")
@@ -239,16 +241,16 @@ class TobiiGlassesController():
 
 		res = self.wait_until_status_is_ok()
 		if res is True:
-			log.debug("Tobii Pro Glasses 2 ... successful connected!")
+			log.debug("Tobii Pro Glasses 2 successful connected!")
 		else:
 			log.error("An error occurs trying to connect to the Tobii Pro Glasses")
 
 		return res
 
 	def __disconnect__(self):
-		log.debug("Disconnecting to the Tobii Pro Glasses 2 ...")
+		log.debug("Disconnecting to the Tobii Pro Glasses 2")
 		self.data_socket.close()
-		log.debug("... Tobii Pro Glasses 2 successful disconnected!")
+		log.debug("Tobii Pro Glasses 2 successful disconnected!")
 		return True
 
 
@@ -289,15 +291,18 @@ class TobiiGlassesController():
 		url = self.base_url + api_action
 		running = True
 		while running:
-			req = urllib2.Request(url)
-			req.add_header('Content-Type', 'application/json')
-			response = urllib2.urlopen(req, None)
-			data = response.read()
-			json_data = json.loads(data)
-			if json_data[key] in values:
-				running = False
-			time.sleep(1)
-
+			try:
+				req = urllib2.Request(url)
+				req.add_header('Content-Type', 'application/json')
+				response = urllib2.urlopen(req, None)
+				data = response.read()
+				json_data = json.loads(data)
+				if json_data[key] in values:
+					running = False
+				time.sleep(1)
+			except urllib2.URLError, e:
+				log.error(e)
+				return -1
 		return json_data[key]
 
 	def get_project_id(self, project_name):
@@ -331,6 +336,15 @@ class TobiiGlassesController():
 	def get_battery_info(self):
 		return ( "Battery info = [ Level: %.2f %% - Remaining Time: %.2f s ]" % (float(self.get_battery_level()), float(self.get_battery_remaining_time())) )
 
+	def get_storage_status(self):
+		return self.get_status()['sys_storage']
+
+	def get_storage_remaining_time(self):
+		return self.get_storage_status()['remaining_time']
+
+	def get_storage_info(self):
+		return ( "Storage info = [ Remaining Time: %.2f s ]" % float(self.get_battery_remaining_time()) )
+
 	def get_recording_status(self):
 		return self.get_status()['sys_recording']
 
@@ -355,7 +369,6 @@ class TobiiGlassesController():
 		else:
 			log.debug("Project %s already exists ..." % project_id)
 			return project_id
-
 
 	def create_participant(self, project_id, participant_name = "DefaultUser", participant_notes = ""):
 		participant_id = self.get_participant_id(participant_name)
@@ -413,10 +426,11 @@ class TobiiGlassesController():
 		self.__post_request__('/api/recordings/' + recording_id + '/pause')
 		return self.wait_for_recording_status(recording_id, ['paused']) == "paused"
 
-	def send_event(self, event_type, event_tag = ''):
+	def send_event(self, event_type, event_tag = '', wait_until_status_is_ok = False):
 		data = {'type': event_type, 'tag': event_tag}
 		self.__post_request__('/api/events', data)
-		return self.wait_until_status_is_ok()
+		if wait_until_status_is_ok:
+			return self.wait_until_status_is_ok()
 
 	def get_data(self):
 		return self.data
