@@ -48,7 +48,7 @@ def main():
 		exit(1)
 
 	recording_id = tobiiglasses.create_recording(participant_id)
-	print "Important! The recording will be stored in the SD folder %s/recordings/%s" % (project_id, recording_id)
+	print "Important! The recording will be stored in the SD folder projects/%s/recordings/%s" % (project_id, recording_id)
 	raw_input("Press enter to start recording")
 	tobiiglasses.start_recording(recording_id)
 	tobiiglasses.send_event("start_recording", "Start of the recording ")
