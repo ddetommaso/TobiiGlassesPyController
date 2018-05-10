@@ -216,7 +216,7 @@ class TobiiGlassesController():
 					if_name = netifaces.ifaddresses(i)[netifaces.AF_INET6][0]['addr'].split("%")[1]
 					if_idx = socket.getaddrinfo(MULTICAST_ADDR + "%" + if_name, PORT, socket.AF_INET6, socket.SOCK_DGRAM)[0][4][3]
 					s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-					s6.settimeout(1.0)
+					s6.settimeout(5.0)
 					s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, if_idx)
 					s6.bind(('::', PORT))
 					PORT_OUT = PORT if sys.platform == 'win32' else PORT + 1
