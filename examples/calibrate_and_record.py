@@ -25,6 +25,7 @@ def main():
 
 	tobiiglasses = TobiiGlassesController()
 	print tobiiglasses.get_battery_info()
+	print tobiiglasses.get_storage_info()
 
 	if tobiiglasses.is_recording():
 		rec_id = tobiiglasses.get_current_recording_id()
@@ -47,6 +48,7 @@ def main():
 		exit(1)
 
 	recording_id = tobiiglasses.create_recording(participant_id)
+	print "Important! The recording will be stored in the SD folder %s/recordings/%s" % (project_id, recording_id)
 	raw_input("Press enter to start recording")
 	tobiiglasses.start_recording(recording_id)
 	tobiiglasses.send_event("start_recording", "Start of the recording ")
