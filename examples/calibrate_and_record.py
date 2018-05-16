@@ -25,8 +25,8 @@ def main():
 
 	tobiiglasses = TobiiGlassesController()
 	print tobiiglasses.get_battery_info()
-	print tobiiglasses.get_storage_info()
-
+	print tobiiglasses.get_storage_info()	
+	
 	if tobiiglasses.is_recording():
 		rec_id = tobiiglasses.get_current_recording_id()
 		tobiiglasses.stop_recording(rec_id)
