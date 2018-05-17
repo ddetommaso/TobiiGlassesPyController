@@ -177,6 +177,7 @@ class TobiiGlassesController():
 		try:
 			self.streaming = True
 			self.td = threading.Timer(0, self.__send_keepalive_msg__, [self.data_socket, self.KA_DATA_MSG])
+			
 			self.tg = threading.Timer(0, self.__grab_data__, [self.data_socket])
 			self.td.start()
 			self.tg.start()
