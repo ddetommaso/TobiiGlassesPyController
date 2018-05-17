@@ -69,7 +69,7 @@ data_et = []
 with open(etfile) as f:
     for line in f:
         data_et.append(json.loads(line))
-# get list of vts and gp and their corresponding ts from json data
+# get list of vts and gp and their corresponding ts from json data 
 vts_list, vts_ts_list = get_json_element(data_et, "vts")
 gp_list,  gp_ts_list  = get_json_element(data_et, "gp")
 

@@ -13,7 +13,7 @@ import json
 #address = "rtsp://" + tobiiglasses.address + ":8554/live/scene"
 #print address
 
-vcap = cv.VideoCapture("rtsp://192.168.71.50:8554/live/scene.mjpeg")
+vcap = cv.VideoCapture("rtsp://192.168.71.50:8554/live/scene")
 
 
 
