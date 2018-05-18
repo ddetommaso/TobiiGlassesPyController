@@ -36,11 +36,11 @@ log.basicConfig(format='[%(levelname)s]: %(message)s', level=log.DEBUG)
 
 class TobiiGlassesController():
 
-	def __init__(self, address = None):
+	def __init__(self, address = None, bool_video = False):
 		self.timeout = 1
 		self.streaming = False
 		self.streaming_video = False
-		self.bool_video = True
+		self.bool_video = bool_video
 		self.udpport = 49152
 		self.address = address
 
@@ -75,6 +75,9 @@ class TobiiGlassesController():
 					self.address = address
 		self.__set_URL__(self.udpport, self.address)
 		self.__connect__()
+
+		if self.bool_video is True:
+			self.set_video_freq(50)
 
 
 
@@ -202,7 +205,6 @@ class TobiiGlassesController():
 			self.streaming = True
 			self.td = threading.Timer(0, self.__send_keepalive_msg__, [self.data_socket, self.KA_DATA_MSG])
 
-			
 			if self.bool_video is True:
 				self.tv = threading.Timer(0, self.__send_keepalive_msg__, [self.video_socket, self.KA_VIDEO_MSG])
 				self.tv.start()
@@ -216,6 +218,9 @@ class TobiiGlassesController():
 		except:
 			self.streaming = False
 			log.error("An error occurs trying to create the threads for receiving data")
+				
+	def is_streaming(self):
+		return self.streaming
 
 	def __post_request__(self, api_action, data=None):
 		url = self.base_url + api_action
@@ -322,10 +327,6 @@ class TobiiGlassesController():
 		else:
 			return False
 
-
-	def is_streaming(self):
-		return self.streaming
-
 	def wait_for_status(self, api_action, key, values):
 		url = self.base_url + api_action
 		running = True
@@ -336,6 +337,7 @@ class TobiiGlassesController():
 				response = urllib2.urlopen(req, None)
 				data = response.read()
 				json_data = json.loads(data)
+				
 				if json_data[key] in values:
 					running = False
 				time.sleep(1)
@@ -343,6 +345,8 @@ class TobiiGlassesController():
 				log.error(e)
 				return -1
 		return json_data[key]
+
+	
 
 	def get_project_id(self, project_name):
 		project_id = None
@@ -360,6 +364,17 @@ class TobiiGlassesController():
 				participant_id = participant['pa_id']
 		return participant_id
 
+	def get_configuration(self):
+		return self.__get_request__('/api/system/conf')
+
+	def get_video_freq(self):
+		return self.get_configuration()['sys_sc_fps'] 
+
+	def set_video_freq(self, newvalue):
+		data = {'sys_sc_fps': newvalue}
+		json_data = self.__post_request__('/api/system/conf/', data)
+		
+		
 	def get_status(self):
 		return self.__get_request__('/api/system/status')
 
