@@ -1,4 +1,4 @@
-from tobiiglassesctrlupdate import TobiiGlassesController
+from tobiiglassesctrl import TobiiGlassesController
 
 import cv2 as cv
 import numpy as np

@@ -51,8 +51,10 @@ def synchronize_gp_with_video(element, element_ts, video_ts, offset):
 
 
 # get recorded video and eyetracking data 
-vcap = cv.VideoCapture("recording_tests/5/fullstream.mp4")
-etfile = 'recording_tests/5/livedata.json'
+vcap = cv.VideoCapture("recording_tests/Jairo_1/fullstream.mp4")
+etfile = 'recording_tests/Jairo_1/livedata.json'
+#save video output
+out = cv.VideoWriter('output.avi', cv.cv.CV_FOURCC(*'MJPG'), 20.0, (int(vcap.get(3)),int(vcap.get(4))))
 
 # loop to get timestamp from all frames
 timestamps = [vcap.get(0)] #pts in ms of the video frames 
@@ -79,7 +81,7 @@ gp_list,  gp_ts_list  = get_json_element(data_et, "gp")
 gp_x, gp_y = synchronize_gp_with_video(gp_list, gp_ts_list, timestamps, vts_ts_list[0])
 
 print "drawing video "
-vcap2 = cv.VideoCapture("recording_tests/5/fullstream.mp4")
+vcap2 = cv.VideoCapture("recording_tests/Jairo_1/fullstream.mp4")
 while(True):
 	if vcap2.isOpened() is True:
 		ret, frame = vcap2.read()
@@ -91,11 +93,12 @@ while(True):
 			for ii in range(len(timestamps)): 
 				if timestamps[ii] == timestamps_2: 
 					cv.circle(frame,(int(gp_x[ii]*width),int(gp_y[ii]*height)), 10, (0,0,255), -1)
-					
+			out.write(frame)					
 			cv.imshow('SCENE', frame)
 	else:
 		print "no video captured"
 	cv.waitKey(1)
 
-
+vcap2.release()
+out.release()
 
