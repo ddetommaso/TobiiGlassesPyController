@@ -29,13 +29,17 @@ def main():
 	tobiiglasses.start_streaming()
 
 	raw_input("Press a key to start streaming (1000 samples will be shown)")
-
+	
 	for i in range(1000):
+		
 		print "Head unit: %s" % tobiiglasses.get_data()['mems']
 		print "Left Eye: %s " % tobiiglasses.get_data()['left_eye']
 		print "Right Eye: %s " % tobiiglasses.get_data()['right_eye']
 		print "Gaze Position: %s " % tobiiglasses.get_data()['gp']
 		print "Gaze Position 3D: %s " % tobiiglasses.get_data()['gp3']
+		
+		print "PTS: %s " % tobiiglasses.get_data()['pts']
+	
 
 	tobiiglasses.stop_streaming()
 

@@ -28,6 +28,7 @@ import sys
 import netifaces
 import select
 
+
 socket.IPPROTO_IPV6 = 41
 
 log.basicConfig(format='[%(levelname)s]: %(message)s', level=log.DEBUG)
@@ -35,9 +36,11 @@ log.basicConfig(format='[%(levelname)s]: %(message)s', level=log.DEBUG)
 
 class TobiiGlassesController():
 
-	def __init__(self, address = None):
+	def __init__(self, address = None, bool_video = False):
 		self.timeout = 1
 		self.streaming = False
+		self.streaming_video = False
+		self.bool_video = bool_video
 		self.udpport = 49152
 		self.address = address
 
@@ -48,14 +51,19 @@ class TobiiGlassesController():
 		self.data['left_eye'] = { 'pc': nd, 'pd': nd, 'gd': nd}
 		self.data['gp'] = nd
 		self.data['gp3'] = nd
+		self.data['pts'] = nd
+		self.data['pv'] = nd
 
 		self.project_id = str(uuid.uuid4())
 		self.project_name = "TobiiProGlasses PyController"
 		self.project_creation_date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 		self.recn = 0
 
-		self.KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
-
+		self.KA_DATA_MSG =  "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
+		
+		if self.bool_video is True:
+			self.KA_VIDEO_MSG = "{\"type\": \"live.video.unicast\",\"key\": \""+ str(uuid.uuid4()) +"_video\",  \"op\": \"start\"}"
+			
 		if self.address is None:
 			data, address = self.__discover_device__()
 			if address is None:
@@ -67,6 +75,9 @@ class TobiiGlassesController():
 					self.address = address
 		self.__set_URL__(self.udpport, self.address)
 		self.__connect__()
+
+		if self.bool_video is True:
+			self.set_video_freq(50)
 
 
 
@@ -94,8 +105,8 @@ class TobiiGlassesController():
 		res = socket.getaddrinfo(self.peer[0], self.peer[1], socket.AF_UNSPEC, socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
 		sock = socket.socket(res[0][0], res[0][1], res[0][2])
 		return sock
-
-
+		
+		
 	def __send_keepalive_msg__(self, socket, msg):
 		while self.streaming:
 			socket.sendto(msg, self.peer)
@@ -108,7 +119,6 @@ class TobiiGlassesController():
 			data, address = socket.recvfrom(1024)
 			jdata = json.loads(data)
 			self.__refresh_data__(jdata)
-
 
 
 	def __refresh_data__(self, jsondata):
@@ -172,17 +182,45 @@ class TobiiGlassesController():
 		except:
 			pass
 
+		try:
+			pts = jsondata['pts']
+			ts = jsondata['ts']
+			if( (self.data['pts']['ts'] < ts) and (jsondata['s'] == 0) ):
+				self.data['pts'] = jsondata
+		except:
+			pass
 
+		try:
+			pv = jsondata['pv']
+			ts = jsondata['ts']
+			if( (self.data['pv']['ts'] < ts) and (jsondata['s'] == 0) ):
+				self.data['pv'] = jsondata
+		except:
+			pass
+			
+			
+			
 	def __start_streaming__(self):
 		try:
 			self.streaming = True
 			self.td = threading.Timer(0, self.__send_keepalive_msg__, [self.data_socket, self.KA_DATA_MSG])
-			self.tg = threading.Timer(0, self.__grab_data__, [self.data_socket])
+
+			if self.bool_video is True:
+				self.tv = threading.Timer(0, self.__send_keepalive_msg__, [self.video_socket, self.KA_VIDEO_MSG])
+				self.tv.start()
+
+			self.tg = threading.Timer(0, self.__grab_data__, [self.data_socket])		
+			
 			self.td.start()
 			self.tg.start()
+			   	
+
 		except:
 			self.streaming = False
 			log.error("An error occurs trying to create the threads for receiving data")
+				
+	def is_streaming(self):
+		return self.streaming
 
 	def __post_request__(self, api_action, data=None):
 		url = self.base_url + api_action
@@ -238,6 +276,8 @@ class TobiiGlassesController():
 	def __connect__(self):
 		log.debug("Connecting to the Tobii Pro Glasses 2 ...")
 		self.data_socket = self.__mksock__()
+		if self.bool_video is True:
+			self.video_socket = self.__mksock__()
 
 		res = self.wait_until_status_is_ok()
 		if res is True:
@@ -249,7 +289,9 @@ class TobiiGlassesController():
 
 	def __disconnect__(self):
 		log.debug("Disconnecting to the Tobii Pro Glasses 2")
-		self.data_socket.close()
+		self.data_socket.close()		
+		if self.bool_video is True:
+			self.video_socket.close()
 		log.debug("Tobii Pro Glasses 2 successful disconnected!")
 		return True
 
@@ -269,7 +311,10 @@ class TobiiGlassesController():
 			if self.streaming:
 				self.streaming = False
 				self.td.join()
+				if self.bool_video is True :
+					self.tv.join()
 				self.tg.join()
+					
 			log.debug("Data streaming successful stopped!")
 		except:
 			log.error("An error occurs trying to stop data streaming")
@@ -277,15 +322,10 @@ class TobiiGlassesController():
 
 	def wait_until_status_is_ok(self):
 		status = self.wait_for_status('/api/system/status', 'sys_status', ['ok'])
-
 		if status == 'ok':
 			return True
 		else:
 			return False
-
-
-	def is_streaming(self):
-		return self.streaming
 
 	def wait_for_status(self, api_action, key, values):
 		url = self.base_url + api_action
@@ -297,6 +337,7 @@ class TobiiGlassesController():
 				response = urllib2.urlopen(req, None)
 				data = response.read()
 				json_data = json.loads(data)
+				
 				if json_data[key] in values:
 					running = False
 				time.sleep(1)
@@ -304,6 +345,8 @@ class TobiiGlassesController():
 				log.error(e)
 				return -1
 		return json_data[key]
+
+	
 
 	def get_project_id(self, project_name):
 		project_id = None
@@ -321,6 +364,17 @@ class TobiiGlassesController():
 				participant_id = participant['pa_id']
 		return participant_id
 
+	def get_configuration(self):
+		return self.__get_request__('/api/system/conf')
+
+	def get_video_freq(self):
+		return self.get_configuration()['sys_sc_fps'] 
+
+	def set_video_freq(self, newvalue):
+		data = {'sys_sc_fps': newvalue}
+		json_data = self.__post_request__('/api/system/conf/', data)
+		
+		
 	def get_status(self):
 		return self.__get_request__('/api/system/status')
 
