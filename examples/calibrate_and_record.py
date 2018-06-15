@@ -1,4 +1,4 @@
-# calibrate_and_record.py : A demo code for connecting with the Tobii Pro Glasses 2
+# calibrate_and_record.py : A demo code for calibrating and recording
 #
 # Copyright (C) 2018  Davide De Tommaso
 #

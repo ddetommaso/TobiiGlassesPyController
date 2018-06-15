@@ -1,4 +1,4 @@
-# streaming.py : A demo for live streaming eye-tracker data
+# streaming.py : A demo for data streaming
 #
 # Copyright (C) 2018  Davide De Tommaso
 #
@@ -25,6 +25,7 @@ import json
 def main():
 
 	tobiiglasses = TobiiGlassesController()
+	print tobiiglasses.get_battery_status()
 
 	tobiiglasses.start_streaming()
 
@@ -38,6 +39,7 @@ def main():
 		print "Gaze Position 3D: %s " % tobiiglasses.get_data()['gp3']
 
 	tobiiglasses.stop_streaming()
+	tobiiglasses.close()
 
 
 
