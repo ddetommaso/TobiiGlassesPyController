@@ -15,15 +15,12 @@ https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl
 Package installation
 =======================
 
-```python
+
 $ pip install tobiiglassesctrl
-```
 
 or
 
-```python
 $ python -m pip install --upgrade tobiiglassesctrl
-```
 
 Tobii Pro Glasses 2 Connection
 =======================
@@ -33,9 +30,8 @@ connect with the device.
 
 1. Network discovery
 
-```python
+
 tobiiglasses = TobiiGlassesController()
-```
 
 If you do not pass any parameter to the constructor, A set of discovery packets
 will be sent through all the network interfaces of your system waiting for an
@@ -44,9 +40,8 @@ answer from the glasses.
 
 2. Wifi connection
 
-```python
+
 tobiiglasses = TobiiGlassesController("192.168.71.50")
-```
 
 Once a wireless connection with the glasses is established you can run the
 controller providing the ipv4 address to the constructor.
@@ -54,23 +49,20 @@ controller providing the ipv4 address to the constructor.
 
 3. Ethernet connection (be sure that it is configured as link-local IPv6).
 
-```python
+
 tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell")
-```
 
 In case you have multiple network interfaces in your system, please specify
 the network interface name when you create a TobiiGlassesController object:
 
 For Linux systems you should specify the name of the net interface ...
 
-```python
+
 tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell%eth0")
-```
 
 # ... while for Windows systems you should specify the net interface index
-```python
+
 tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell%7")
-```
 
 
 Python Examples
