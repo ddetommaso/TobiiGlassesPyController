@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
-import urllib2
+import urllib
 import json
 import time
 import datetime
@@ -341,7 +341,7 @@ class TobiiGlassesController():
 				if json_data[key] in values:
 					running = False
 				time.sleep(1)
-			except urllib2.URLError, e:
+			except urllib2.URLError as e:
 				log.error(e)
 				return -1
 		return json_data[key]
@@ -457,7 +457,10 @@ class TobiiGlassesController():
 
 	def start_recording(self, recording_id):
 		self.__post_request__('/api/recordings/' + recording_id + '/start')
-		return self.wait_for_recording_status(recording_id, ['recording']) == "recording"
+		if self.wait_for_recording_status(recording_id, ['recording']) == "recording":
+			self.send_recording_info()
+			return True
+		return False
 
 	def stop_recording(self, recording_id):
 		self.__post_request__('/api/recordings/' + recording_id + '/stop')
@@ -472,6 +475,17 @@ class TobiiGlassesController():
 		self.__post_request__('/api/events', data)
 		if wait_until_status_is_ok:
 			return self.wait_until_status_is_ok()
+
+	def send_variable(self, variable, tag):
+		self.send_event('#%s#' % variable, tag)
+
+	def send_recording_info(self):
+		config_tags = ''
+		config_tags += 'recording_id=%s,' % self.recording_name
+		config_tags += 'project_name=%s,' % self.project_name
+		config_tags += 'participant_name=%s,' % self.participant_name
+		config_tags += 'sd_path=projects/%s/recordings/%s,' % (self.project_id, self.recording_id)
+		self.send_variable('recording_config', config_tags)
 
 	def get_data(self):
 		return self.data
