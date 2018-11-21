@@ -13,7 +13,6 @@ https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl
 
 ## Install the package
 
-<<<<<<< HEAD:README.md
 ### Python 2.7
 
 ```
@@ -35,17 +34,12 @@ $ python -m pip uninstall tobiiglassesctrl
 ```
 
 ### Python 3.5.x
-=======
-$ python -m pip install --upgrade tobiiglassesctrl (Python 2.7.x)
-or
-$ python3 -m pip install --upgrade tobiiglassesctrl (Python 3.5.x)
->>>>>>> 3b3fe6af93dad7b686315fff147e772364cd8e47:README
 
 ```
 $ python3 -m pip uninstall tobiiglassesctrl
 ```
 
-##Tobii Pro Glasses 2 Connection
+## Tobii Pro Glasses 2 Connection
 
 Connect the glasses through Wifi or Ethernet connection. You have 3 methods to
 connect with the device.
