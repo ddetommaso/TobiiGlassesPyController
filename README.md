@@ -13,6 +13,7 @@ https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl
 
 ## Install the package
 
+<<<<<<< HEAD:README.md
 ### Python 2.7
 
 ```
@@ -34,6 +35,11 @@ $ python -m pip uninstall tobiiglassesctrl
 ```
 
 ### Python 3.5.x
+=======
+$ python -m pip install --upgrade tobiiglassesctrl (Python 2.7.x)
+or
+$ python3 -m pip install --upgrade tobiiglassesctrl (Python 3.5.x)
+>>>>>>> 3b3fe6af93dad7b686315fff147e772364cd8e47:README
 
 ```
 $ python3 -m pip uninstall tobiiglassesctrl
@@ -89,7 +95,7 @@ tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell%7")
 
 ## Python Examples
 
-The following Python examples are available in the directory 'examples':
+The following Python examples are available:
 
 * connect.py - A Python script to connect with the eye-tracker.
 * calibrate_and_record.py - A Python script for managing calibrations and recordings.
