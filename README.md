@@ -1,5 +1,4 @@
-A Python controller for Tobii Pro Glasses 2
-=======================
+# A Python controller for Tobii Pro Glasses 2
 
 A Python controller for accessing eye-tracker data and managing recordings,
 participants and calibrations using the wearable Tobii Pro Glasses 2.
@@ -12,66 +11,88 @@ This project is available on Github at:
 https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl
 
 
-Package installation
-=======================
+## Install the package
 
+### Python 2.7
 
-$ pip install tobiiglassesctrl
-
-or
-
+```
 $ python -m pip install --upgrade tobiiglassesctrl
+```
 
-Tobii Pro Glasses 2 Connection
-=======================
+### Python 3.5.x
+
+```
+$ python3 -m pip install --upgrade tobiiglassesctrl
+```
+
+## Uninstall the package
+
+### Python 2.7
+
+```
+$ python -m pip uninstall tobiiglassesctrl
+```
+
+### Python 3.5.x
+
+```
+$ python3 -m pip uninstall tobiiglassesctrl
+```
+
+##Tobii Pro Glasses 2 Connection
 
 Connect the glasses through Wifi or Ethernet connection. You have 3 methods to
 connect with the device.
 
-1. Network discovery
+### 1. Network discovery
 
-
+```
 tobiiglasses = TobiiGlassesController()
+```
 
 If you do not pass any parameter to the constructor, A set of discovery packets
 will be sent through all the network interfaces of your system waiting for an
 answer from the glasses.
 
 
-2. Wifi connection
+### 2. Wifi connection
 
-
+```
 tobiiglasses = TobiiGlassesController("192.168.71.50")
+```
 
 Once a wireless connection with the glasses is established you can run the
 controller providing the ipv4 address to the constructor.
 
 
-3. Ethernet connection (be sure that it is configured as link-local IPv6).
+### 3. Ethernet connection (be sure that it is configured as link-local IPv6).
 
-
+```
 tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell")
+```
 
 In case you have multiple network interfaces in your system, please specify
 the network interface name when you create a TobiiGlassesController object:
 
 For Linux systems you should specify the name of the net interface ...
 
-
+```
 tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell%eth0")
+```
 
-# ... while for Windows systems you should specify the net interface index
+For Windows systems you should specify the net interface index
 
+```
 tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell%7")
+```
 
 
-Python Examples
-=======================
+## Python Examples
 
 The following Python examples are available in the directory 'examples':
 
-- connect.py - A Python script to connect with the eye-tracker.
-- calibrate_and_record.py - A Python script for managing calibrations and recordings.
-- streaming.py - A Python script for receiving live data from the eye-tracker
-- live_scene.py - A Python script for receiving live scene from the eye-tracker camera.
-- live_scene_and_gaze.py - A Python script for receiving live scene and synchronized gaze.
+* connect.py - A Python script to connect with the eye-tracker.
+* calibrate_and_record.py - A Python script for managing calibrations and recordings.
+* streaming.py - A Python script for receiving live data from the eye-tracker
+* live_scene.py - A Python script for receiving live scene from the eye-tracker camera.
+* live_scene_and_gaze.py - A Python script for receiving live scene and synchronized gaze.
