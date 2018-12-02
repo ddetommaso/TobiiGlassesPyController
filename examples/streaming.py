@@ -15,28 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
-from tobiiglassesctrl import TobiiGlassesController
-
-import sys
 import time
 import json
+import sys
+sys.path.append('..')
+
+from tobiiglassesctrl import TobiiGlassesController
 
 
 def main():
 
-	tobiiglasses = TobiiGlassesController()
-	print tobiiglasses.get_battery_status()
+	tobiiglasses = TobiiGlassesController("192.168.71.50")
+	print(tobiiglasses.get_battery_status())
 
 	tobiiglasses.start_streaming()
-
-	raw_input("Press a key to start streaming (1000 samples will be shown)")
+	print("Please wait ...")
+	time.sleep(3.0)
 
 	for i in range(1000):
-		print "Head unit: %s" % tobiiglasses.get_data()['mems']
-		print "Left Eye: %s " % tobiiglasses.get_data()['left_eye']
-		print "Right Eye: %s " % tobiiglasses.get_data()['right_eye']
-		print "Gaze Position: %s " % tobiiglasses.get_data()['gp']
-		print "Gaze Position 3D: %s " % tobiiglasses.get_data()['gp3']
+		print("Head unit: %s" % tobiiglasses.get_data()['mems'])
+		print("Left Eye: %s " % tobiiglasses.get_data()['left_eye'])
+		print("Right Eye: %s " % tobiiglasses.get_data()['right_eye'])
+		print("Gaze Position: %s " % tobiiglasses.get_data()['gp'])
+		print("Gaze Position 3D: %s " % tobiiglasses.get_data()['gp3'])
 
 	tobiiglasses.stop_streaming()
 	tobiiglasses.close()

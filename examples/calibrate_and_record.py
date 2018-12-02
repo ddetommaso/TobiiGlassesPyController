@@ -15,30 +15,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
+import time
+import sys
+sys.path.append('..')
+
 from tobiiglassesctrl import TobiiGlassesController
 
-import sys
-import time
+if hasattr(__builtins__, 'raw_input'):
+      input=raw_input
 
 
 def main():
 
 	tobiiglasses = TobiiGlassesController()
-	print tobiiglasses.get_battery_info()
-	print tobiiglasses.get_storage_info()
+	print(tobiiglasses.get_battery_info())
+	print(tobiiglasses.get_storage_info())
 
 	if tobiiglasses.is_recording():
 		rec_id = tobiiglasses.get_current_recording_id()
 		tobiiglasses.stop_recording(rec_id)
 
-	project_name = raw_input("Please insert the project's name: ")
+	project_name = input("Please insert the project's name: ")
 	project_id = tobiiglasses.create_project(project_name)
 
-	participant_name = raw_input("Please insert the participant's name: ")
+	participant_name = input("Please insert the participant's name: ")
 	participant_id = tobiiglasses.create_participant(project_id, participant_name)
 
 	calibration_id = tobiiglasses.create_calibration(project_id, participant_id)
-	raw_input("Put the calibration marker in front of the user, then press enter to calibrate")
+	input("Put the calibration marker in front of the user, then press enter to calibrate")
 	tobiiglasses.start_calibration(calibration_id)
 
 	res = tobiiglasses.wait_until_calibration_is_done(calibration_id)
@@ -48,11 +52,11 @@ def main():
 		exit(1)
 
 	recording_id = tobiiglasses.create_recording(participant_id)
-	print "Important! The recording will be stored in the SD folder projects/%s/recordings/%s" % (project_id, recording_id)
-	raw_input("Press enter to start recording")
+	print("Important! The recording will be stored in the SD folder projects/%s/recordings/%s" % (project_id, recording_id))
+	input("Press enter to start recording")
 	tobiiglasses.start_recording(recording_id)
 	tobiiglasses.send_event("start_recording", "Start of the recording ")
-	raw_input("Press enter to stop recording")
+	input("Press enter to stop recording")
 	tobiiglasses.send_event("stop_recording", "Stop of the recording " + str(recording_id))
 	tobiiglasses.stop_recording(recording_id)
 

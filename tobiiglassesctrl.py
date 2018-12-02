@@ -15,23 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
-import urllib
 import json
 import time
 import datetime
 import threading
 import socket
 import uuid
-import logging as log
+import logging
 import struct
 import sys
 import netifaces
 import select
 import IN
 
-socket.IPPROTO_IPV6 = 41
+try:
+    from urllib.parse import urlparse, urlencode
+    from urllib.request import urlopen, Request
+    from urllib.error import HTTPError
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlencode
+    from urllib2 import urlopen, Request, HTTPError
 
-log.basicConfig(format='[%(levelname)s]: %(message)s', level=log.DEBUG)
+socket.IPPROTO_IPV6 = 41
 
 
 class TobiiGlassesController():
@@ -43,6 +49,7 @@ class TobiiGlassesController():
 		self.udpport = 49152
 		self.address = address
 		self.iface_name = None
+		logging.basicConfig(format='[%(levelname)s]: %(message)s', level=logging.DEBUG)
 
 		self.data = {}
 		nd = {'ts': -1}
@@ -102,14 +109,14 @@ class TobiiGlassesController():
 				sock.setsockopt(socket.SOL_SOCKET, IN.SO_BINDTODEVICE, self.iface_name+'\0')
 		except socket.error as e:
 			if e.errno == 1:
-				log.warning("Binding to a network interface is permitted only for root users.")
-				log.warning("Data streaming might not work properly, unless you run the script as root.")
+				logging.warning("Binding to a network interface is permitted only for root users.")
+				logging.warning("Data streaming might not work properly, unless you run the script as root.")
 		return sock
 
 
 	def __send_keepalive_msg__(self, sock, msg):
 		while self.streaming:
-			sock.sendto(msg, self.peer)
+			sock.sendto(msg.encode('utf-8'), self.peer)
 			time.sleep(self.timeout)
 
 
@@ -117,7 +124,7 @@ class TobiiGlassesController():
 		time.sleep(1)
 		while self.streaming:
 			data, address = socket.recvfrom(1024)
-			jdata = json.loads(data)
+			jdata = json.loads(data.decode('utf-8'))
 			self.__refresh_data__(jdata)
 
 
@@ -208,85 +215,89 @@ class TobiiGlassesController():
 			if self.video_scene:
 				self.tv = threading.Timer(0, self.__send_keepalive_msg__, [self.video_socket, self.KA_VIDEO_MSG])
 				self.tv.start()
-				log.debug("Video streaming started...")
+				logging.debug("Video streaming started...")
 			self.td.start()
 			self.tg.start()
-			log.debug("Data streaming started...")
+			logging.debug("Data streaming started...")
 		except:
 			self.streaming = False
-			log.error("An error occurs trying to create the threads for data streaming")
+			logging.error("An error occurs trying to create the threads for data streaming")
 
 
-	def __post_request__(self, api_action, data=None):
+	def __post_request__(self, api_action, data=None, wait_for_response=True):
 		url = self.base_url + api_action
-		req = urllib2.Request(url)
+		req = Request(url)
 		req.add_header('Content-Type', 'application/json')
 		data = json.dumps(data)
-		log.debug("Sending JSON: " + str(data))
-		response = urllib2.urlopen(req, data)
+		logging.debug("Sending JSON: " + str(data))
+		if wait_for_response is False:
+			threading.Thread(target=urlopen, args=(req, data.encode('utf-8'),)).start()
+			return None
+		response = urlopen(req, data.encode('utf-8'))
 		res = response.read()
-		log.debug("Response: " + str(res))
+		logging.debug("Response: " + str(res))
 		try:
-			res = json.loads(res)
+			res = json.loads(res.decode('utf-8'))
 		except:
 			pass
 		return res
 
 	def __get_request__(self, api_action):
 		url = self.base_url + api_action
-		res = urllib2.urlopen(url)
-		data = json.load(res)
+		res = urlopen(url).read()
+		data = json.loads(res.decode('utf-8'))
 		return data
 
 	def __discover_device__(self):
-		log.debug("Looking for a Tobii Pro Glasses 2 device ...")
+		logging.debug("Looking for a Tobii Pro Glasses 2 device ...")
 		MULTICAST_ADDR = 'ff02::1'
 		PORT = 13006
 
 		for i in netifaces.interfaces():
-			if netifaces.ifaddresses(i).has_key(netifaces.AF_INET6):
+			if netifaces.AF_INET6 in netifaces.ifaddresses(i).keys():
 				if "%" in netifaces.ifaddresses(i)[netifaces.AF_INET6][0]['addr']:
 					if_name = netifaces.ifaddresses(i)[netifaces.AF_INET6][0]['addr'].split("%")[1]
 					if_idx = socket.getaddrinfo(MULTICAST_ADDR + "%" + if_name, PORT, socket.AF_INET6, socket.SOCK_DGRAM)[0][4][3]
 					s6 = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-					s6.settimeout(8.0)
+					s6.settimeout(30.0)
 					s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, if_idx)
 					s6.bind(('::', PORT))
 					PORT_OUT = PORT if sys.platform == 'win32' else PORT + 1
 					try:
-						s6.sendto('{"type":"discover"}', (MULTICAST_ADDR, PORT_OUT))
-						log.debug("Discover request sent to %s on interface %s " % ( str((MULTICAST_ADDR, PORT_OUT)),if_name) )
-						log.debug("Waiting response from a device ...")
+						discover_json = '{"type":"discover"}'
+						s6.sendto(discover_json.encode('utf-8'), (MULTICAST_ADDR, PORT_OUT))
+						logging.debug("Discover request sent to %s on interface %s " % ( str((MULTICAST_ADDR, PORT_OUT)),if_name) )
+						logging.debug("Waiting for a reponse from the device ...")
 						data, address = s6.recvfrom(1024)
-						jdata = json.loads(data)
-						log.debug("From: " + address[0] + " " + data)
-						log.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
+						jdata = json.loads(data.decode('utf-8'))
+						logging.debug("From: " + address[0] + " " + str(data))
+						logging.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
 						return (jdata, address[0])
 					except:
-						log.debug("No device found on interface %s" % if_name)
+						logging.debug("No device found on interface %s" % if_name)
 
-		log.debug("No device found!")
+		logging.debug("No device found!")
 		return (None, None)
 
 	def __connect__(self):
-		log.debug("Connecting to the Tobii Pro Glasses 2 ...")
+		logging.debug("Connecting to the Tobii Pro Glasses 2 ...")
 		self.data_socket = self.__mksock__()
 		if self.video_scene:
 			self.video_socket = self.__mksock__()
 		res = self.wait_until_status_is_ok()
 		if res is True:
-			log.debug("Tobii Pro Glasses 2 successful connected!")
+			logging.debug("Tobii Pro Glasses 2 successful connected!")
 		else:
-			log.error("An error occurs trying to connect to the Tobii Pro Glasses")
+			logging.error("An error occurs trying to connect to the Tobii Pro Glasses")
 
 		return res
 
 	def __disconnect__(self):
-		log.debug("Disconnecting to the Tobii Pro Glasses 2")
+		logging.debug("Disconnecting to the Tobii Pro Glasses 2")
 		self.data_socket.close()
 		if self.video_scene:
 			self.video_socket.close()
-		log.debug("Tobii Pro Glasses 2 successful disconnected!")
+		logging.debug("Tobii Pro Glasses 2 successful disconnected!")
 		return True
 
 	def close(self):
@@ -296,16 +307,16 @@ class TobiiGlassesController():
 			self.__disconnect__()
 
 	def start_streaming(self):
-		log.debug("Start streaming ...")
+		logging.debug("Start streaming ...")
 		try:
 			self.__start_streaming__()
-			log.debug("Data streaming successful started!")
+			logging.debug("Data streaming successful started!")
 		except:
-			log.error("An error occurs trying to connect to the Tobii Pro Glasses")
+			logging.error("An error occurs trying to connect to the Tobii Pro Glasses")
 
 
 	def stop_streaming(self):
-		log.debug("Stop data streaming ...")
+		logging.debug("Stop data streaming ...")
 		try:
 			if self.streaming:
 				self.streaming = False
@@ -313,9 +324,9 @@ class TobiiGlassesController():
 				self.tg.join()
 				if self.video_scene:
 					self.tv.join()
-			log.debug("Data streaming successful stopped!")
+			logging.debug("Data streaming successful stopped!")
 		except:
-			log.error("An error occurs trying to stop data streaming")
+			logging.error("An error occurs trying to stop data streaming")
 
 	def wait_until_status_is_ok(self):
 		status = self.wait_for_status('/api/system/status', 'sys_status', ['ok'])
@@ -333,16 +344,16 @@ class TobiiGlassesController():
 		running = True
 		while running:
 			try:
-				req = urllib2.Request(url)
+				req = Request(url)
 				req.add_header('Content-Type', 'application/json')
-				response = urllib2.urlopen(req, None)
+				response = urlopen(req, None)
 				data = response.read()
-				json_data = json.loads(data)
+				json_data = json.loads(data.decode('utf-8'))
 				if json_data[key] in values:
 					running = False
 				time.sleep(1)
-			except urllib2.URLError as e:
-				log.error(e)
+			except:
+				logging.error("Error making URL request")
 				return -1
 		return json_data[key]
 
@@ -403,12 +414,12 @@ class TobiiGlassesController():
 		project_id = self.get_project_id(projectname)
 
 		if project_id is None:
-			data = {'pr_info' : {'CreationDate': self.project_creation_date, 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname.encode('utf-8'))), 'Name': projectname}}
+			data = {'pr_info' : {'CreationDate': self.project_creation_date, 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname)), 'Name': projectname}}
 			json_data = self.__post_request__('/api/projects', data)
-			log.debug("Project %s created!" % json_data['pr_id'])
+			logging.debug("Project %s created!" % json_data['pr_id'])
 			return json_data['pr_id']
 		else:
-			log.debug("Project %s already exists ..." % project_id)
+			logging.debug("Project %s already exists ..." % project_id)
 			return project_id
 
 	def create_participant(self, project_id, participant_name = "DefaultUser", participant_notes = ""):
@@ -416,29 +427,29 @@ class TobiiGlassesController():
 		self.participant_name = participant_name
 
 		if participant_id is None:
-			data = {'pa_project': project_id, 'pa_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))), 'Name': self.participant_name, 'Notes': participant_notes}}
+			data = {'pa_project': project_id, 'pa_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)), 'Name': self.participant_name, 'Notes': participant_notes}}
 			json_data = self.__post_request__('/api/participants', data)
-			log.debug("Participant " + json_data['pa_id'] + " created! Project " + project_id)
+			logging.debug("Participant " + json_data['pa_id'] + " created! Project " + project_id)
 			return json_data['pa_id']
 		else:
-			log.debug("Participant %s already exists ..." % participant_id)
+			logging.debug("Participant %s already exists ..." % participant_id)
 			return participant_id
 
 	def create_calibration(self, project_id, participant_id):
 		data = {'ca_project': project_id, 'ca_type': 'default', 'ca_participant': participant_id}
 		json_data = self.__post_request__('/api/calibrations', data)
-		log.debug("Calibration " + json_data['ca_id'] + "created! Project: " + project_id + ", Participant: " + participant_id)
+		logging.debug("Calibration " + json_data['ca_id'] + "created! Project: " + project_id + ", Participant: " + participant_id)
 		return json_data['ca_id']
 
 	def wait_until_calibration_is_done(self, calibration_id):
 		while True:
 			status = self.wait_for_status('/api/calibrations/' + calibration_id + '/status', 'ca_state', ['calibrating', 'calibrated', 'stale', 'uncalibrated', 'failed'])
-			log.debug("Calibration status %s" % status)
+			logging.debug("Calibration status %s" % status)
 			if status == 'uncalibrated' or status == 'stale' or status == 'failed':
-				log.debug("Calibration %s failed " % calibration_id)
+				logging.debug("Calibration %s failed " % calibration_id)
 				return False
 			elif status == 'calibrated':
-				log.debug("Calibration %s successful " % calibration_id)
+				logging.debug("Calibration %s successful " % calibration_id)
 				return True
 
 	def start_calibration(self, calibration_id):
@@ -446,8 +457,8 @@ class TobiiGlassesController():
 
 	def create_recording(self, participant_id, recording_notes = ""):
 		self.recn = self.recn + 1
-		recording_name = "Recording" + str(self.recn)
-		data = {'rec_participant': participant_id, 'rec_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))), 'Name': recording_name, 'Notes': recording_notes}}
+		recording_name = "Recording_%s" % str(self.recn)
+		data = {'rec_participant': participant_id, 'rec_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)), 'Name': recording_name, 'Notes': recording_notes}}
 		json_data = self.__post_request__('/api/recordings', data)
 		return json_data['rec_id']
 
@@ -458,7 +469,7 @@ class TobiiGlassesController():
 	def start_recording(self, recording_id):
 		self.__post_request__('/api/recordings/' + recording_id + '/start')
 		if self.wait_for_recording_status(recording_id, ['recording']) == "recording":
-			self.send_recording_info()
+			self.send_recording_info(recording_id, self.project_name, self.participant_name)
 			return True
 		return False
 
@@ -470,22 +481,20 @@ class TobiiGlassesController():
 		self.__post_request__('/api/recordings/' + recording_id + '/pause')
 		return self.wait_for_recording_status(recording_id, ['paused']) == "paused"
 
-	def send_event(self, event_type, event_tag = '', wait_until_status_is_ok = False):
+	def send_event(self, event_type, event_tag = ''):
 		data = {'type': event_type, 'tag': event_tag}
-		self.__post_request__('/api/events', data)
-		if wait_until_status_is_ok:
-			return self.wait_until_status_is_ok()
+		self.__post_request__('/api/events', data, wait_for_response=False)
 
-	def send_variable(self, variable, tag):
-		self.send_event('#%s#' % variable, tag)
+	def send_json_event(self, event_type, event_value):
+		self.send_event('JsonEvent', "{'event_type': '%s','event_value': '%s'}" % (event_type, event_value))
 
-	def send_recording_info(self):
-		config_tags = ''
-		config_tags += 'recording_id=%s,' % self.recording_name
-		config_tags += 'project_name=%s,' % self.project_name
-		config_tags += 'participant_name=%s,' % self.participant_name
-		config_tags += 'sd_path=projects/%s/recordings/%s,' % (self.project_id, self.recording_id)
-		self.send_variable('recording_config', config_tags)
+	def send_variable(self, variable_name, variable_value):
+		self.send_event('#%s#' % variable_name, variable_value)
+
+	def send_recording_info(self, recording_id, project_name, participant_name):
+		self.send_variable('recording_id', recording_id)
+		self.send_variable('project_name', project_name)
+		self.send_variable('participant_name', participant_name)
 
 	def get_data(self):
 		return self.data
