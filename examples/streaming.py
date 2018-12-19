@@ -17,9 +17,6 @@
 
 import time
 import json
-import sys
-sys.path.append('..')
-
 from tobiiglassesctrl.controller import TobiiGlassesController
 
 

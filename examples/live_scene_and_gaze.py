@@ -15,14 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
-import sys
 import cv2
 import numpy as np
 
 if hasattr(__builtins__, 'raw_input'):
       input=raw_input
 
-sys.path.append('..')
 from tobiiglassesctrl.controller import TobiiGlassesController
 
 ipv4_address = "192.168.71.50"

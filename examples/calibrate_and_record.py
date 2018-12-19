@@ -15,10 +15,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import sys
 import time
-sys.path.append('..')
-
 from tobiiglassesctrl.controller import TobiiGlassesController
 
 if hasattr(__builtins__, 'raw_input'):
