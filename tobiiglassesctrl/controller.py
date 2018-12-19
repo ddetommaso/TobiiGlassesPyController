@@ -1,19 +1,19 @@
 # tobiiglassescontroller.py: A Python controller for Tobii Pro Glasses 2
 #
-# Copyright (C) 2018  Davide De Tommaso
+# Copyright (C) 2019  Davide De Tommaso
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 import json
 import time
@@ -38,7 +38,7 @@ except ImportError:
     from urllib2 import urlopen, Request, HTTPError
 
 socket.IPPROTO_IPV6 = 41
-
+TOBII_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S+%f'
 
 class TobiiGlassesController():
 
@@ -62,7 +62,6 @@ class TobiiGlassesController():
 
 		self.project_id = str(uuid.uuid4())
 		self.project_name = "TobiiProGlasses PyController"
-		self.project_creation_date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 		self.recn = 0
 
 		self.KA_DATA_MSG = "{\"type\": \"live.data.unicast\", \"key\": \""+ str(uuid.uuid4()) +"\", \"op\": \"start\"}"
@@ -85,6 +84,8 @@ class TobiiGlassesController():
 		if self.__connect__() is False:
 			quit()
 
+	def __get_current_datetime__(self):
+		return datetime.datetime.now().replace(microsecond=0).strftime(TOBII_DATETIME_FORMAT)
 
 	def __set_URL__(self, udpport, address):
 		if ':' in address:
@@ -276,7 +277,7 @@ class TobiiGlassesController():
 					except:
 						logging.debug("No device found on interface %s" % if_name)
 
-		logging.debug("No device found!")
+		logging.debug("The discovery process did not find any device!")
 		return (None, None)
 
 	def __connect__(self):
@@ -361,16 +362,22 @@ class TobiiGlassesController():
 		project_id = None
 		projects = self.__get_request__('/api/projects')
 		for project in projects:
-			if project['pr_info']['Name'] == project_name:
-				project_id = project['pr_id']
+			try:
+				if project['pr_info']['Name'] == project_name:
+					project_id = project['pr_id']
+			except:
+				pass
 		return project_id
 
 	def get_participant_id(self, participant_name):
 		participant_id = None
 		participants = self.__get_request__('/api/participants')
 		for participant in participants:
-			if participant['pa_info']['Name'] == participant_name:
-				participant_id = participant['pa_id']
+			try:
+				if participant['pa_info']['Name'] == participant_name:
+					participant_id = participant['pa_id']
+			except:
+				pass
 		return participant_id
 
 	def get_status(self):
@@ -414,7 +421,10 @@ class TobiiGlassesController():
 		project_id = self.get_project_id(projectname)
 
 		if project_id is None:
-			data = {'pr_info' : {'CreationDate': self.project_creation_date, 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname)), 'Name': projectname}}
+			data = {'pr_info' : {'CreationDate': self.__get_current_datetime__(),
+								 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname)),
+								 'Name': projectname},
+					'pr_created': self.__get_current_datetime__() }
 			json_data = self.__post_request__('/api/projects', data)
 			logging.debug("Project %s created!" % json_data['pr_id'])
 			return json_data['pr_id']
@@ -427,7 +437,11 @@ class TobiiGlassesController():
 		self.participant_name = participant_name
 
 		if participant_id is None:
-			data = {'pa_project': project_id, 'pa_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)), 'Name': self.participant_name, 'Notes': participant_notes}}
+			data = {'pa_project': project_id,
+					'pa_info': { 'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)),
+								 'Name': self.participant_name,
+								 'Notes': participant_notes},
+					'pa_created': self.__get_current_datetime__()}
 			json_data = self.__post_request__('/api/participants', data)
 			logging.debug("Participant " + json_data['pa_id'] + " created! Project " + project_id)
 			return json_data['pa_id']
@@ -436,7 +450,9 @@ class TobiiGlassesController():
 			return participant_id
 
 	def create_calibration(self, project_id, participant_id):
-		data = {'ca_project': project_id, 'ca_type': 'default', 'ca_participant': participant_id}
+		data = {'ca_project': project_id, 'ca_type': 'default',
+				'ca_participant': participant_id,
+				'ca_created': self.__get_current_datetime__()}
 		json_data = self.__post_request__('/api/calibrations', data)
 		logging.debug("Calibration " + json_data['ca_id'] + "created! Project: " + project_id + ", Participant: " + participant_id)
 		return json_data['ca_id']
@@ -458,7 +474,11 @@ class TobiiGlassesController():
 	def create_recording(self, participant_id, recording_notes = ""):
 		self.recn = self.recn + 1
 		recording_name = "Recording_%s" % str(self.recn)
-		data = {'rec_participant': participant_id, 'rec_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)), 'Name': recording_name, 'Notes': recording_notes}}
+		data = {'rec_participant': participant_id,
+				'rec_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)),
+							 'Name': recording_name,
+							 'Notes': recording_notes},
+							 'rec_created': self.__get_current_datetime__()}
 		json_data = self.__post_request__('/api/recordings', data)
 		return json_data['rec_id']
 
@@ -481,20 +501,20 @@ class TobiiGlassesController():
 		self.__post_request__('/api/recordings/' + recording_id + '/pause')
 		return self.wait_for_recording_status(recording_id, ['paused']) == "paused"
 
-	def send_event(self, event_type, event_tag = ''):
-		data = {'type': event_type, 'tag': event_tag}
+	def send_custom_event(self, event_type, event_tag = ''):
+		data = {'type': event_type, 'tag': event_tag, 'ets': int(time.time())}
 		self.__post_request__('/api/events', data, wait_for_response=False)
 
-	def send_json_event(self, event_type, event_value):
-		self.send_event('JsonEvent', "{'event_type': '%s','event_value': '%s'}" % (event_type, event_value))
+	def send_tobiipro_event(self, event_type, event_value):
+		self.send_custom_event('JsonEvent', "{'event_type': '%s','event_value': '%s'}" % (event_type, event_value))
 
-	def send_variable(self, variable_name, variable_value):
-		self.send_event('#%s#' % variable_name, variable_value)
+	def send_experimental_var(self, variable_name, variable_value):
+		self.send_custom_event('#%s#' % variable_name, variable_value)
 
 	def send_recording_info(self, recording_id, project_name, participant_name):
-		self.send_variable('recording_id', recording_id)
-		self.send_variable('project_name', project_name)
-		self.send_variable('participant_name', participant_name)
+		self.send_experimental_var('recording_id', recording_id)
+		self.send_experimental_var('project_name', project_name)
+		self.send_experimental_var('participant_name', participant_name)
 
 	def get_data(self):
 		return self.data

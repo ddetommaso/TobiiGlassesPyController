@@ -15,13 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
 
+import sys
 import cv2
 import numpy as np
-from tobiiglassesctrl import TobiiGlassesController
+
+if hasattr(__builtins__, 'raw_input'):
+      input=raw_input
+
+sys.path.append('..')
+from tobiiglassesctrl.controller import TobiiGlassesController
 
 ipv4_address = "192.168.71.50"
 
-tobiiglasses = TobiiGlassesController(ipv4_address, True)
+tobiiglasses = TobiiGlassesController(ipv4_address, video_scene=True)
 
 project_id = tobiiglasses.create_project("Test live_scene_and_gaze.py")
 
@@ -29,7 +35,7 @@ participant_id = tobiiglasses.create_participant(project_id, "participant_test")
 
 calibration_id = tobiiglasses.create_calibration(project_id, participant_id)
 
-raw_input("Put the calibration marker in front of the user, then press enter to calibrate")
+input("Put the calibration marker in front of the user, then press enter to calibrate")
 tobiiglasses.start_calibration(calibration_id)
 
 res = tobiiglasses.wait_until_calibration_is_done(calibration_id)
@@ -45,9 +51,9 @@ video_freq = tobiiglasses.get_video_freq()
 
 frame_duration = 1000.0/float(video_freq) #frame duration in ms
 
-raw_input("Press ENTER to start the video scene")
+input("Press ENTER to start the video scene")
 
-cap = cv2.VideoCapture("rtsp://%s/live/scene" % ipv4_address)
+cap = cv2.VideoCapture("rtsp://%s:8554/live/scene" % ipv4_address)
 
 # Check if camera opened successfully
 if (cap.isOpened()== False):

@@ -1,25 +1,25 @@
 # calibrate_and_record.py : A demo code for calibrating and recording
 #
-# Copyright (C) 2018  Davide De Tommaso
+# Copyright (C) 2019  Davide De Tommaso
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import time
 import sys
+import time
 sys.path.append('..')
 
-from tobiiglassesctrl import TobiiGlassesController
+from tobiiglassesctrl.controller import TobiiGlassesController
 
 if hasattr(__builtins__, 'raw_input'):
       input=raw_input
@@ -55,9 +55,9 @@ def main():
 	print("Important! The recording will be stored in the SD folder projects/%s/recordings/%s" % (project_id, recording_id))
 	input("Press enter to start recording")
 	tobiiglasses.start_recording(recording_id)
-	tobiiglasses.send_event("start_recording", "Start of the recording ")
+	tobiiglasses.send_custom_event("start_recording", "Start of the recording ")
 	input("Press enter to stop recording")
-	tobiiglasses.send_event("stop_recording", "Stop of the recording " + str(recording_id))
+	tobiiglasses.send_custom_event("stop_recording", "Stop of the recording " + str(recording_id))
 	tobiiglasses.stop_recording(recording_id)
 
 

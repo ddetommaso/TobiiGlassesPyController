@@ -50,7 +50,7 @@ connect with the device.
 tobiiglasses = TobiiGlassesController()
 ```
 
-If you do not pass any parameter to the constructor, A set of discovery packets
+If you do not pass any parameter to the constructor, a set of discovery packets
 will be sent through all the network interfaces of your system waiting for an
 answer from the glasses.
 
@@ -62,17 +62,21 @@ tobiiglasses = TobiiGlassesController("192.168.71.50")
 ```
 
 Once a wireless connection with the glasses is established you can run the
-controller providing the ipv4 address to the constructor.
+controller providing the IPv4 address to the constructor.
 
 
-### 3. Ethernet connection (be sure that it is configured as link-local IPv6).
+### 3. Ethernet connection
+
+You can use both IPv4 or IPv6. In case you are using IPv4, ensure to have
+a DHCP server running in your machine. In case of IPv6, ensure that the network
+is configured as link-local.
 
 ```
 tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell")
 ```
 
 In case you have multiple network interfaces in your system, please specify
-the network interface name when you create a TobiiGlassesController object:
+the network interface-name when you create a TobiiGlassesController object:
 
 For Linux systems you should specify the name of the net interface ...
 
@@ -94,5 +98,5 @@ The following Python examples are available:
 * connect.py - A Python script to connect with the eye-tracker.
 * calibrate_and_record.py - A Python script for managing calibrations and recordings.
 * streaming.py - A Python script for receiving live data from the eye-tracker
-* live_scene.py - A Python script for receiving live scene from the eye-tracker camera.
-* live_scene_and_gaze.py - A Python script for receiving live scene and synchronized gaze.
+* live_scene.py - A Python script for receiving live scene from the eye-tracker camera (works only with IPv4).
+* live_scene_and_gaze.py - A Python script for receiving live scene and synchronized gaze (works only with IPv4).
