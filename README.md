@@ -17,25 +17,37 @@ https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl
 ```
 git clone https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl.git
 cd TobiiProGlasses2_PyCtrl
+```
 
+```
 python setup.py install (for Python 2.7)
-
+```
 or
 
+```
 python3 setup.py install (for Python 3.5)
 ```
 
 ### Using pip
 
 #### Python 2.7
+
 ```
 python -m pip install --upgrade tobiiglassesctrl (for Python 2.7)
+```
 
 or
 
+```
 python3 -m pip install --upgrade tobiiglassesctrl (for Python 3.5)
 ```
 
+## Update the pip package to pypi.org
+
+```
+python setup.py sdist
+twine upload dist/*
+```
 
 ## Tobii Pro Glasses 2 Connection
 
