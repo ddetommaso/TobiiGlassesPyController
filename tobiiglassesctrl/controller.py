@@ -488,8 +488,7 @@ class TobiiGlassesController():
 
 	def start_recording(self, recording_id):
 		self.__post_request__('/api/recordings/' + recording_id + '/start')
-		if self.wait_for_recording_status(recording_id, ['recording']) == "recording":
-			self.send_recording_info(recording_id, self.project_name, self.participant_name)
+		if self.wait_for_recording_status(recording_id, ['recording']) == "recording":			
 			return True
 		return False
 
@@ -510,11 +509,6 @@ class TobiiGlassesController():
 
 	def send_experimental_var(self, variable_name, variable_value):
 		self.send_custom_event('#%s#' % variable_name, variable_value)
-
-	def send_recording_info(self, recording_id, project_name, participant_name):
-		self.send_experimental_var('recording_id', recording_id)
-		self.send_experimental_var('project_name', project_name)
-		self.send_experimental_var('participant_name', participant_name)
 
 	def get_data(self):
 		return self.data
