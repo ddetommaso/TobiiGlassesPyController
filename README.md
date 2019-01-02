@@ -13,7 +13,7 @@ https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl
 
 ## Install/Uninstall the package
 
-### Using sources
+### Install the controller using sources
 ```
 git clone https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl.git
 cd TobiiProGlasses2_PyCtrl
@@ -28,9 +28,7 @@ or
 python3 setup.py install (for Python 3.5)
 ```
 
-### Using pip
-
-#### Python 2.7
+### Install the controller using pip
 
 ```
 python -m pip install --upgrade tobiiglassesctrl (for Python 2.7)
@@ -40,6 +38,18 @@ or
 
 ```
 python3 -m pip install --upgrade tobiiglassesctrl (for Python 3.5)
+```
+
+### Uninstall the controller using pip
+
+```
+python -m pip uninstall tobiiglassesctrl (for Python 2.7)
+```
+
+or
+
+```
+python3 -m pip uninstall tobiiglassesctrl (for Python 3.5)
 ```
 
 ## Update the pip package to pypi.org
