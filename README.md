@@ -8,15 +8,15 @@ https://www.tobiipro.com/product-listing/tobii-pro-glasses-2-sdk/
 
 This project is available on Github at:
 
-https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl
+https://github.com/ddetommaso/tobiiglasses-controller.git
 
 
 ## Install/Uninstall the package
 
 ### Install the controller using sources
 ```
-git clone https://github.com/ddetommaso/TobiiProGlasses2_PyCtrl.git
-cd TobiiProGlasses2_PyCtrl
+git clone --recursive https://github.com/ddetommaso/tobiiglasses-controller.git
+cd tobiiglasses-controller
 ```
 
 ```
@@ -101,22 +101,21 @@ the network interface-name when you create a TobiiGlassesController object:
 For Linux systems you should specify the name of the net interface ...
 
 ```
-tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell%eth0")
+tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:ff00%eth0")
 ```
 
 For Windows systems you should specify the net interface index
 
 ```
-tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell%7")
+tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:ff00%7")
 ```
 
 
 ## Python Examples
 
-The following Python examples are available:
+Python examples are available in the examples folder of the tobiiglasses-controller
 
-* connect.py - A Python script to connect with the eye-tracker.
-* calibrate_and_record.py - A Python script for managing calibrations and recordings.
-* streaming.py - A Python script for receiving live data from the eye-tracker
-* live_scene.py - A Python script for receiving live scene from the eye-tracker camera (works only with IPv4).
-* live_scene_and_gaze.py - A Python script for receiving live scene and synchronized gaze (works only with IPv4).
+```
+git clone --recursive https://github.com/ddetommaso/tobiiglasses-controller.git
+cd tobiiglasses-controller/examples
+```
