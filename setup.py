@@ -16,7 +16,7 @@ setup(
     version='2.0',
     description='A Python controller for Tobii Pro Glasses 2',
     url='https://github.com/ddetommaso/tobiiglasses-controller',
-    download_url='https://github.com/ddetommaso/tobiiglasses-controller/archive/2.0.tar.gz',
+    download_url='https://github.com/ddetommaso/tobiiglasses-controller/archive/2.0-rc3.tar.gz',
     install_requires=['netifaces'],
     author='Davide De Tommaso',
     author_email='ing.davidedetommaso@gmail.com',

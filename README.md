@@ -11,9 +11,9 @@ This project is available on Github at:
 https://github.com/ddetommaso/tobiiglasses-controller.git
 
 
-## Install/Uninstall the package
+## 1. Install/Uninstall the package
 
-### Install the controller using sources
+### 1.1 Install the controller using sources
 ```
 git clone --recursive https://github.com/ddetommaso/tobiiglasses-controller.git
 cd tobiiglasses-controller
@@ -28,7 +28,7 @@ or
 python3 setup.py install (for Python 3.5)
 ```
 
-### Install the controller using pip
+### 1.2 Install the controller using pip
 
 ```
 python -m pip install --upgrade tobiiglassesctrl (for Python 2.7)
@@ -40,7 +40,7 @@ or
 python3 -m pip install --upgrade tobiiglassesctrl (for Python 3.5)
 ```
 
-### Uninstall the controller using pip
+### 2. Uninstall the controller using pip
 
 ```
 python -m pip uninstall tobiiglassesctrl (for Python 2.7)
@@ -52,19 +52,19 @@ or
 python3 -m pip uninstall tobiiglassesctrl (for Python 3.5)
 ```
 
-## Update the pip package to pypi.org
+## 3. Update the pip package to pypi.org
 
 ```
 python setup.py sdist
 twine upload dist/*
 ```
 
-## Tobii Pro Glasses 2 Connection
+## 4. Tobii Pro Glasses 2 Connection
 
 Connect the glasses through Wifi or Ethernet connection. You have 3 methods to
 connect with the device.
 
-### 1. Network discovery
+### 4.1 Network discovery
 
 ```
 tobiiglasses = TobiiGlassesController()
@@ -75,7 +75,7 @@ will be sent through all the network interfaces of your system waiting for an
 answer from the glasses.
 
 
-### 2. Wifi connection
+### 4.2 Wifi connection
 
 ```
 tobiiglasses = TobiiGlassesController("192.168.71.50")
@@ -85,7 +85,7 @@ Once a wireless connection with the glasses is established you can run the
 controller providing the IPv4 address to the constructor.
 
 
-### 3. Ethernet connection
+### 4.3 Ethernet connection
 
 You can use both IPv4 or IPv6. In case you are using IPv4, ensure to have
 a DHCP server running in your machine. In case of IPv6, ensure that the network
@@ -111,7 +111,7 @@ tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:ff00%7")
 ```
 
 
-## Python Examples
+## 5. Python Examples
 
 Python examples are available in the examples folder of the tobiiglasses-controller
 
