@@ -26,7 +26,6 @@ import struct
 import sys
 import netifaces
 import select
-import IN
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -107,6 +106,7 @@ class TobiiGlassesController():
 		sock = socket.socket(res[0][0], res[0][1], res[0][2])
 		try:
 			if iptype == socket.AF_INET6 and sys.platform == "linux2":
+                import IN
 				sock.setsockopt(socket.SOL_SOCKET, IN.SO_BINDTODEVICE, self.iface_name+'\0')
 		except socket.error as e:
 			if e.errno == 1:
@@ -488,7 +488,7 @@ class TobiiGlassesController():
 
 	def start_recording(self, recording_id):
 		self.__post_request__('/api/recordings/' + recording_id + '/start')
-		if self.wait_for_recording_status(recording_id, ['recording']) == "recording":			
+		if self.wait_for_recording_status(recording_id, ['recording']) == "recording":
 			return True
 		return False
 
