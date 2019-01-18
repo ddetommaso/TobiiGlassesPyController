@@ -411,6 +411,9 @@ class TobiiGlassesController():
 	def get_recording_status(self):
 		return self.get_status()['sys_recording']
 
+	def get_recordings(self):
+		return self.__get_request__('/api/recordings')
+
 	def get_status(self):
 		return self.__get_request__('/api/system/status')
 
