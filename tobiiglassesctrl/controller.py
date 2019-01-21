@@ -303,7 +303,7 @@ class TobiiGlassesController():
 
 		if participant_id is None:
 			data = {'pa_project': project_id,
-					'pa_info': { 'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)),
+					'pa_info': { 'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))),
 								 'Name': self.participant_name,
 								 'Notes': participant_notes},
 					'pa_created': self.__get_current_datetime__()}
@@ -319,7 +319,7 @@ class TobiiGlassesController():
 
 		if project_id is None:
 			data = {'pr_info' : {'CreationDate': self.__get_current_datetime__(),
-								 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname)),
+								 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname.encode('utf-8'))),
 								 'Name': projectname},
 					'pr_created': self.__get_current_datetime__() }
 			json_data = self.__post_request__('/api/projects', data)
@@ -333,7 +333,7 @@ class TobiiGlassesController():
 		self.recn = self.recn + 1
 		recording_name = "Recording_%s" % str(self.recn)
 		data = {'rec_participant': participant_id,
-				'rec_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)),
+				'rec_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))),
 							 'Name': recording_name,
 							 'Notes': recording_notes},
 							 'rec_created': self.__get_current_datetime__()}
@@ -434,7 +434,7 @@ class TobiiGlassesController():
 		return self.wait_for_recording_status(recording_id, ['paused']) == "paused"
 
 	def send_custom_event(self, event_type, event_tag = ''):
-		data = {'type': event_type, 'tag': event_tag, 'ets': int(time.time())}
+		data = {'type': event_type, 'tag': event_tag}
 		self.__post_request__('/api/events', data, wait_for_response=False)
 
 	def send_experimental_var(self, variable_name, variable_value):
