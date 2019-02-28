@@ -303,7 +303,7 @@ class TobiiGlassesController():
 
 		if participant_id is None:
 			data = {'pa_project': project_id,
-					'pa_info': { 'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))),
+					'pa_info': { 'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)),
 								 'Name': self.participant_name,
 								 'Notes': participant_notes},
 					'pa_created': self.__get_current_datetime__()}
@@ -319,7 +319,7 @@ class TobiiGlassesController():
 
 		if project_id is None:
 			data = {'pr_info' : {'CreationDate': self.__get_current_datetime__(),
-								 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname.encode('utf-8'))),
+								 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname)),
 								 'Name': projectname},
 					'pr_created': self.__get_current_datetime__() }
 			json_data = self.__post_request__('/api/projects', data)
@@ -333,7 +333,7 @@ class TobiiGlassesController():
 		self.recn = self.recn + 1
 		recording_name = "Recording_%s" % str(self.recn)
 		data = {'rec_participant': participant_id,
-				'rec_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))),
+				'rec_info': {'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)),
 							 'Name': recording_name,
 							 'Notes': recording_notes},
 							 'rec_created': self.__get_current_datetime__()}
