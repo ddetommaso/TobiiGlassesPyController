@@ -1,3 +1,4 @@
 import pytest
 
-import tobiiglassesctrl
+def test_import():
+  import tobiiglassesctrl
