@@ -14,4 +14,4 @@ matrix:
         - os: osx
           language: generic
 script:
-    - pytest
+    - python -m pytest
