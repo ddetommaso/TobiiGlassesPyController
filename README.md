@@ -1,14 +1,12 @@
 # A Python controller for Tobii Pro Glasses 2
 
+[![Build Status](https://travis-ci.org/ddetommaso/tobiiglasses-controller.svg?branch=master)](https://travis-ci.org/ddetommaso/tobiiglasses-controller)
+
 A Python controller for accessing eye-tracker data and managing recordings,
 participants and calibrations using the wearable Tobii Pro Glasses 2.
 The code is based on the Tobii Pro Glasses 2 APIs available at:
 
 https://www.tobiipro.com/product-listing/tobii-pro-glasses-2-sdk/
-
-This project is available on Github at:
-
-https://github.com/ddetommaso/tobiiglasses-controller.git
 
 
 ## 1. Install/Uninstall the package
@@ -20,12 +18,12 @@ cd tobiiglasses-controller
 ```
 
 ```
-python setup.py install (for Python 2.7)
+python setup.py install (for Python 2.x)
 ```
 or
 
 ```
-python3 setup.py install (for Python 3.5)
+python3 setup.py install (for Python 3.x)
 ```
 
 ### 1.2 Install the controller using pip
