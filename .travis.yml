@@ -19,7 +19,7 @@ matrix:
           env: TOXENV=py33
 
 install:
-    - python setup.py install
+    - pip install -e .
 
 script:
-    - pytest -v tests/test_import.py
+    - pytest
