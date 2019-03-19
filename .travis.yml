@@ -22,4 +22,4 @@ install:
     - python setup.py install
 
 script:
-    - pytest
+    - pytest -v tests/test_import.py
