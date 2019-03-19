@@ -6,8 +6,10 @@ python:
 install:
     - pip install -e .
 
-script:
+before_script:
     - pwd
     - ls
     - python tests/test_import.py
+
+script:
     - pytest
