@@ -6,16 +6,10 @@ install:
 matrix:
     include:
         - os: linux
-          python: 3.2
-        - os: linux
-          python: 3.3
-        - os: osx
-          language: generic
-        - os: osx
-          language: generic
+          python: 2.7
           
-before_script:
-    - pip install -U pytest
-
+        - os: linux
+          python: 3.6
+          
 script:
     - python -m pytest
