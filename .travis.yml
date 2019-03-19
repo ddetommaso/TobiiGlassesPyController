@@ -13,5 +13,9 @@ matrix:
           language: generic
         - os: osx
           language: generic
+          
+before_script:
+    - pip install -U pytest
+
 script:
     - python -m pytest
