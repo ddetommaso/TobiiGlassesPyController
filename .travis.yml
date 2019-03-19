@@ -12,4 +12,4 @@ before_script:
     - python tests/test_import.py
 
 script:
-    - pytest
+    - pytest -t tests/
