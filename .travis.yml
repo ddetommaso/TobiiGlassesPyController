@@ -1,22 +1,7 @@
 language: python
 
-matrix:
-    include:
-        - os: linux
-          python: 2.7
-          env: TOXENV=py27
-        - os: linux
-          python: 3.2
-          env: TOXENV=py32
-        - os: linux
-          python: 3.3
-          env: TOXENV=py33
-        - os: osx
-          language: generic
-          env: TOXENV=py32
-        - os: osx
-          language: generic
-          env: TOXENV=py33
+python:
+ - "3.6"
 
 install:
     - pip install -e .
