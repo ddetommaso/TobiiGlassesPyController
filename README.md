@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/ddetommaso/tobiiglasses-controller.svg?branch=master)](https://travis-ci.org/ddetommaso/tobiiglasses-controller)
 
-A Python controller for accessing eye-tracker data and managing recordings,
-participants and calibrations using the wearable Tobii Pro Glasses 2.
-The code is based on the Tobii Pro Glasses 2 APIs available at:
+The TobiiGlassesPyController is an open-source controller for accessing eye-tracking data and for managing recordings,
+participants and calibrations using the mobile Tobii Pro Glasses 2 eye-tracker.
+The controller is based on the Tobii Pro Glasses 2 APIs available at:
 
 https://www.tobiipro.com/product-listing/tobii-pro-glasses-2-sdk/
 
