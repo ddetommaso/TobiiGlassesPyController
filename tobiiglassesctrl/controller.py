@@ -440,6 +440,9 @@ class TobiiGlassesController():
 	def send_experimental_var(self, variable_name, variable_value):
 		self.send_custom_event('#%s#' % variable_name, variable_value)
 
+	def send_experimental_vars(self, variable_names_list, variable_values_list):
+		self.send_custom_event('@%s@' % str(variable_names_list), str(variable_values_list))
+
 	def send_tobiipro_event(self, event_type, event_value):
 		self.send_custom_event('JsonEvent', "{'event_type': '%s','event_value': '%s'}" % (event_type, event_value))
 
