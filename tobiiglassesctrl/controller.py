@@ -77,8 +77,9 @@ class TobiiGlassesController():
 					self.address = address
 		if "%" in self.address:
 			if sys.platform == "win32":
-				self.address = self.address.split("%")[0]
-			self.iface_name = self.address.split("%")[1]
+				self.address,self.iface_name = self.address.split("%")
+			else:
+				self.iface_name = self.address.split("%")[1]
 		self.__set_URL__(self.udpport, self.address)
 		if self.__connect__() is False:
 			quit()
