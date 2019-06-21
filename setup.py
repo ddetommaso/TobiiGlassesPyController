@@ -13,10 +13,10 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='tobiiglassesctrl',
-    version='2.2.1',
+    version='2.2.2',
     description='A Python controller for Tobii Pro Glasses 2',
     url='https://github.com/ddetommaso/tobiiglasses-controller',
-    download_url='https://github.com/ddetommaso/tobiiglasses-controller/archive/2.2.1.tar.gz',
+    download_url='https://github.com/ddetommaso/tobiiglasses-controller/archive/2.2.2.tar.gz',
     install_requires=['netifaces'],
     author='Davide De Tommaso',
     author_email='ing.davidedetommaso@gmail.com',
