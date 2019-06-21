@@ -121,7 +121,7 @@ class TobiiGlassesController():
 					s6.settimeout(30.0)
 					s6.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, if_idx)
 					s6.bind(('::', PORT))
-					PORT_OUT = PORT if sys.platform == 'win32' else PORT + 1
+					PORT_OUT = PORT if sys.platform == 'win32' or sys.platform == 'darwin' else PORT + 1
 					try:
 						discover_json = '{"type":"discover"}'
 						s6.sendto(discover_json.encode('utf-8'), (MULTICAST_ADDR, PORT_OUT))
