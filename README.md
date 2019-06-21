@@ -20,7 +20,7 @@ https://github.com/ddetommaso/TobiiGlassesPyController/wiki
 
 Davide De Tommaso and Agnieszka Wykowska. 2019. TobiiGlassesPySuite: An open-source suite for using the Tobii Pro Glasses 2 in eye-tracking studies. In 2019 Symposium on Eye Tracking Research and Applications (ETRA ’19), June 25–28, 2019, Denver , CO, USA. ACM, New York, NY, USA, 5 pages. https://doi.org/10.1145/3314111.3319828
 
-BibTex
+
 ```
 @inproceedings{DeTommaso:2019:TOS:3314111.3319828,
  author = {De Tommaso, Davide and Wykowska, Agnieszka},
