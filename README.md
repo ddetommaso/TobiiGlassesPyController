@@ -11,9 +11,7 @@ https://www.tobiipro.com/product-listing/tobii-pro-glasses-2-sdk/
 
 # Getting started
 
-Please visit the wiki
-
-https://github.com/ddetommaso/TobiiGlassesPyController/wiki
+Please visit the [wiki](https://github.com/ddetommaso/TobiiGlassesPyController/wiki)
 
 
 # Citation
