@@ -9,112 +9,37 @@ The controller is based on the Tobii Pro Glasses 2 APIs available at:
 
 https://www.tobiipro.com/product-listing/tobii-pro-glasses-2-sdk/
 
+# Getting started
 
-## 1. Install/Uninstall the package
+Please visit the wiki
 
-### 1.1 Install the controller using sources
+https://github.com/ddetommaso/TobiiGlassesPyController/wiki
+
+
+# Citation
+
+Davide De Tommaso and Agnieszka Wykowska. 2019. TobiiGlassesPySuite: An open-source suite for using the Tobii Pro Glasses 2 in eye-tracking studies. In 2019 Symposium on Eye Tracking Research and Applications (ETRA ’19), June 25–28, 2019, Denver , CO, USA. ACM, New York, NY, USA, 5 pages. https://doi.org/10.1145/3314111.3319828
+
+BibTex
 ```
-git clone --recursive https://github.com/ddetommaso/tobiiglasses-controller.git
-cd tobiiglasses-controller
-```
-
-```
-python setup.py install (for Python 2.x)
-```
-or
-
-```
-python3 setup.py install (for Python 3.x)
-```
-
-### 1.2 Install the controller using pip
-
-```
-python -m pip install --upgrade tobiiglassesctrl (for Python 2.7)
-```
-
-or
-
-```
-python3 -m pip install --upgrade tobiiglassesctrl (for Python 3.5)
-```
-
-### 2. Uninstall the controller using pip
-
-```
-python -m pip uninstall tobiiglassesctrl (for Python 2.7)
-```
-
-or
-
-```
-python3 -m pip uninstall tobiiglassesctrl (for Python 3.5)
-```
-
-## 3. Update the pip package to pypi.org
-
-```
-python setup.py sdist
-twine upload dist/*
-```
-
-## 4. Tobii Pro Glasses 2 Connection
-
-Connect the glasses through Wifi or Ethernet connection. You have 3 methods to
-connect with the device.
-
-### 4.1 Network discovery
-
-```
-tobiiglasses = TobiiGlassesController()
-```
-
-If you do not pass any parameter to the constructor, a set of discovery packets
-will be sent through all the network interfaces of your system waiting for an
-answer from the glasses.
-
-
-### 4.2 Wifi connection
-
-```
-tobiiglasses = TobiiGlassesController("192.168.71.50")
-```
-
-Once a wireless connection with the glasses is established you can run the
-controller providing the IPv4 address to the constructor.
-
-
-### 4.3 Ethernet connection
-
-You can use both IPv4 or IPv6. In case you are using IPv4, ensure to have
-a DHCP server running in your machine. In case of IPv6, ensure that the network
-is configured as link-local.
-
-```
-tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:hell")
-```
-
-In case you have multiple network interfaces in your system, please specify
-the network interface-name when you create a TobiiGlassesController object:
-
-For Linux systems you should specify the name of the net interface ...
-
-```
-tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:ff00%eth0")
-```
-
-For Windows systems you should specify the net interface index
-
-```
-tobiiglasses = TobiiGlassesController("fe80::76fe:48ff:ff00:ff00%7")
+@inproceedings{DeTommaso:2019:TOS:3314111.3319828,
+ author = {De Tommaso, Davide and Wykowska, Agnieszka},
+ title = {TobiiGlassesPySuite: An Open-source Suite for Using the Tobii Pro Glasses 2 in Eye-tracking Studies},
+ booktitle = {Proceedings of the 11th ACM Symposium on Eye Tracking Research \& Applications},
+ series = {ETRA '19},
+ year = {2019},
+ isbn = {978-1-4503-6709-7},
+ location = {Denver, Colorado},
+ pages = {46:1--46:5},
+ articleno = {46},
+ numpages = {5},
+ url = {http://doi.acm.org/10.1145/3314111.3319828},
+ doi = {10.1145/3314111.3319828},
+ acmid = {3319828},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {Tobii Pro Glasses 2, eye-tracking, human-computer interaction, open-source, wearable computing, wearable eye-tracker},
+} 
 ```
 
 
-## 5. Python Examples
-
-Python examples are available in the examples folder of the tobiiglasses-controller
-
-```
-git clone --recursive https://github.com/ddetommaso/tobiiglasses-controller.git
-cd tobiiglasses-controller/examples
-```
