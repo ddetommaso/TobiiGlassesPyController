@@ -30,11 +30,11 @@ import select
 try:
     from urllib.parse import urlparse, urlencode
     from urllib.request import urlopen, Request
-    from urllib.error import HTTPError
+    from urllib.error import URLError, HTTPError
 except ImportError:
     from urlparse import urlparse
     from urllib import urlencode
-    from urllib2 import urlopen, Request, HTTPError
+    from urllib2 import urlopen, Request, HTTPError, URLError
 
 socket.IPPROTO_IPV6 = 41
 TOBII_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S+%f'
@@ -150,24 +150,22 @@ class TobiiGlassesController():
 	def __grab_data__(self, socket):
 		time.sleep(1)
 		while self.streaming:
-			data, address = socket.recvfrom(1024)
-			jdata = json.loads(data.decode('utf-8'))
-			self.__refresh_data__(jdata)
+			try:
+				data, address = socket.recvfrom(1024)
+				jdata = json.loads(data.decode('utf-8'))
+				self.__refresh_data__(jdata)
+			except socket.timeout:
+				logging.error("A timeout occurred while receiving data")
+				self.streaming = False
 
 	def __mksock__(self):
 		iptype = socket.AF_INET
 		if ':' in self.peer[0]:
 			iptype = socket.AF_INET6
 		res = socket.getaddrinfo(self.peer[0], self.peer[1], socket.AF_UNSPEC, socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)
-		sock = socket.socket(res[0][0], res[0][1], res[0][2])
-		try:
-			if iptype == socket.AF_INET6 and sys.platform == "linux2":
-				import IN
-				sock.setsockopt(socket.SOL_SOCKET, IN.SO_BINDTODEVICE, self.iface_name+'\0')
-		except socket.error as e:
-			if e.errno == 1:
-				logging.warning("Binding to a network interface is permitted only for root users.")
-				logging.warning("Data streaming might not work properly, unless you run the script as root.")
+		family, socktype, proto, canonname, sockaddr = res[0]
+		sock = socket.socket(family, socktype, proto)
+		sock.settimeout(5.0)
 		return sock
 
 	def __post_request__(self, api_action, data=None, wait_for_response=True):
@@ -258,7 +256,7 @@ class TobiiGlassesController():
 
 	def __send_keepalive_msg__(self, sock, msg):
 		while self.streaming:
-			sock.sendto(msg.encode('utf-8'), self.peer)
+			res = sock.sendto(msg.encode('utf-8'), self.peer)
 			time.sleep(self.timeout)
 
 	def __set_URL__(self, udpport, address):
@@ -269,20 +267,16 @@ class TobiiGlassesController():
 		self.peer = (address, udpport)
 
 	def __start_streaming__(self):
-		try:
-			self.streaming = True
-			self.td = threading.Timer(0, self.__send_keepalive_msg__, [self.data_socket, self.KA_DATA_MSG])
-			self.tg = threading.Timer(0, self.__grab_data__, [self.data_socket])
-			if self.video_scene:
-				self.tv = threading.Timer(0, self.__send_keepalive_msg__, [self.video_socket, self.KA_VIDEO_MSG])
-				self.tv.start()
-				logging.debug("Video streaming started...")
-			self.td.start()
-			self.tg.start()
-			logging.debug("Data streaming started...")
-		except:
-			self.streaming = False
-			logging.error("An error occurs trying to create the threads for data streaming")
+		self.streaming = True
+		self.td = threading.Timer(0, self.__send_keepalive_msg__, [self.data_socket, self.KA_DATA_MSG])
+		self.tg = threading.Timer(0, self.__grab_data__, [self.data_socket])
+		if self.video_scene:
+			self.tv = threading.Timer(0, self.__send_keepalive_msg__, [self.video_socket, self.KA_VIDEO_MSG])
+			self.tv.start()
+			logging.debug("Video streaming started...")
+		self.td.start()
+		self.tg.start()
+		logging.debug("Data streaming started...")
 
 	def close(self):
 		if self.address is not None:
@@ -477,7 +471,6 @@ class TobiiGlassesController():
 		logging.debug("Start streaming ...")
 		try:
 			self.__start_streaming__()
-			logging.debug("Data streaming successful started!")
 		except:
 			logging.error("An error occurs trying to connect to the Tobii Pro Glasses")
 
@@ -506,18 +499,18 @@ class TobiiGlassesController():
 		url = self.base_url + api_action
 		running = True
 		while running:
+			req = Request(url)
+			req.add_header('Content-Type', 'application/json')
 			try:
-				req = Request(url)
-				req.add_header('Content-Type', 'application/json')
 				response = urlopen(req, None)
-				data = response.read()
-				json_data = json.loads(data.decode('utf-8'))
-				if json_data[key] in values:
-					running = False
-				time.sleep(1)
-			except:
-				logging.error("Error making URL request")
+			except URLError as e:
+				logging.error(e.reason)
 				return -1
+			data = response.read()
+			json_data = json.loads(data.decode('utf-8'))
+			if json_data[key] in values:
+				running = False
+			time.sleep(1)
 		return json_data[key]
 
 	def wait_until_calibration_is_done(self, calibration_id):
