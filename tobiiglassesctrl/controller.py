@@ -450,6 +450,22 @@ class TobiiGlassesController():
 		data = {'sys_et_freq': 100}
 		json_data = self.__post_request__('/api/system/conf', data)
 
+	def set_et_indoor_preset(self):
+		data = {'sys_sc_preset': 'Indoor'}
+		json_data = self.__post_request__('/api/system/conf', data)
+
+	def set_et_outdoor_preset(self):
+		data = {'sys_ec_preset': 'ClearWeather'}
+		json_data = self.__post_request__('/api/system/conf', data)
+
+	def set_video_auto_preset(self):
+		data = {'sys_sc_preset': 'Auto'}
+		json_data = self.__post_request__('/api/system/conf', data)
+
+	def set_video_gaze_preset(self):
+		data = {'sys_sc_preset': 'GazeBasedExposure'}
+		json_data = self.__post_request__('/api/system/conf', data)
+
 	def set_video_freq_25(self):
 		data = {'sys_sc_fps': 25}
 		json_data = self.__post_request__('/api/system/conf/', data)
