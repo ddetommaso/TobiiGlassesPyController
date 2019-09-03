@@ -37,7 +37,8 @@ except ImportError:
     from urllib2 import urlopen, Request, HTTPError, URLError
 
 socket.IPPROTO_IPV6 = 41
-TOBII_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S+%f'
+#TOBII_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S+%f'#(Tobii Glasses controller uses Format %d/%m/%Y %H:%M:%S (this datetime format causes a crash if controller is used)
+TOBII_DATETIME_FORMAT = '%d/%m/%Y %H:%M:%S'
 
 class TobiiGlassesController():
 
