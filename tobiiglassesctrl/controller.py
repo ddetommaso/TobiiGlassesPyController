@@ -167,6 +167,12 @@ class TobiiGlassesController():
 		family, socktype, proto, canonname, sockaddr = res[0]
 		sock = socket.socket(family, socktype, proto)
 		sock.settimeout(5.0)
+		try:
+			if iptype == socket.AF_INET6:
+				sock.setsockopt(socket.SOL_SOCKET, 25, self.iface_name+'\0')
+		except socket.error as e:
+			if e.errno == 1:
+				logging.warning("Binding to a network interface is permitted only for root users.")
 		return sock
 
 	def __post_request__(self, api_action, data=None, wait_for_response=True):
@@ -299,7 +305,7 @@ class TobiiGlassesController():
 
 		if participant_id is None:
 			data = {'pa_project': project_id,
-					'pa_info': { 'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)),
+					'pa_info': { 'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))),
 								 'Name': self.participant_name,
 								 'Notes': participant_notes},
 					'pa_created': self.__get_current_datetime__()}
@@ -315,7 +321,7 @@ class TobiiGlassesController():
 
 		if project_id is None:
 			data = {'pr_info' : {'CreationDate': self.__get_current_datetime__(),
-								 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname)),
+								 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))),
 								 'Name': projectname},
 					'pr_created': self.__get_current_datetime__() }
 			json_data = self.__post_request__('/api/projects', data)
