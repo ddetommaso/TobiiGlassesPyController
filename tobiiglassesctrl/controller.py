@@ -24,21 +24,26 @@ import uuid
 import logging
 import struct
 import sys
-import netifaces
 import select
 
 try:
-    from urllib.parse import urlparse, urlencode
-    from urllib.request import urlopen, Request
-    from urllib.error import URLError, HTTPError
+	import netifaces
+	TOBII_DISCOVERY_ALLOWED = True
+except:
+	TOBII_DISCOVERY_ALLOWED = False
+
+try:
+	from urllib.parse import urlparse, urlencode
+	from urllib.request import urlopen, Request
+	from urllib.error import URLError, HTTPError
 except ImportError:
-    from urlparse import urlparse
-    from urllib import urlencode
-    from urllib2 import urlopen, Request, HTTPError, URLError
+	from urlparse import urlparse
+	from urllib import urlencode
+	from urllib2 import urlopen, Request, HTTPError, URLError
 
 socket.IPPROTO_IPV6 = 41
-#TOBII_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S+%f'#(Tobii Glasses controller uses Format %d/%m/%Y %H:%M:%S (this datetime format causes a crash if controller is used)
-TOBII_DATETIME_FORMAT = '%d/%m/%Y %H:%M:%S'
+TOBII_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S+%f'
+TOBII_DATETIME_FORMAT_HUMREAD = '%d/%m/%Y %H:%M:%S'
 
 class TobiiGlassesController():
 
@@ -109,6 +114,10 @@ class TobiiGlassesController():
 		return True
 
 	def __discover_device__(self):
+		if TOBII_DISCOVERY_ALLOWED == False:
+			logging.error("Device discovery is not available due to a missing dependency (netifaces)")
+			exit(1)
+
 		logging.debug("Looking for a Tobii Pro Glasses 2 device ...")
 		MULTICAST_ADDR = 'ff02::1'
 		PORT = 13006
@@ -139,8 +148,8 @@ class TobiiGlassesController():
 		logging.debug("The discovery process did not find any device!")
 		return (None, None)
 
-	def __get_current_datetime__(self):
-		return datetime.datetime.now().replace(microsecond=0).strftime(TOBII_DATETIME_FORMAT)
+	def __get_current_datetime__(self, timeformat=TOBII_DATETIME_FORMAT):
+		return datetime.datetime.now().replace(microsecond=0).strftime(timeformat)
 
 	def __get_request__(self, api_action):
 		url = self.base_url + api_action
@@ -305,7 +314,7 @@ class TobiiGlassesController():
 
 		if participant_id is None:
 			data = {'pa_project': project_id,
-					'pa_info': { 'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))),
+					'pa_info': { 'EagleId': str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name)),
 								 'Name': self.participant_name,
 								 'Notes': participant_notes},
 					'pa_created': self.__get_current_datetime__()}
@@ -320,8 +329,8 @@ class TobiiGlassesController():
 		project_id = self.get_project_id(projectname)
 
 		if project_id is None:
-			data = {'pr_info' : {'CreationDate': self.__get_current_datetime__(),
-								 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, self.participant_name.encode('utf-8'))),
+			data = {'pr_info' : {'CreationDate': self.__get_current_datetime__(timeformat=TOBII_DATETIME_FORMAT_HUMREAD),
+								 'EagleId':  str(uuid.uuid5(uuid.NAMESPACE_DNS, projectname)),
 								 'Name': projectname},
 					'pr_created': self.__get_current_datetime__() }
 			json_data = self.__post_request__('/api/projects', data)
