@@ -64,6 +64,7 @@ class TobiiGlassesController():
 		self.data['gp'] = nd
 		self.data['gp3'] = nd
 		self.data['pts'] = nd
+		self.data['vts'] = nd
 
 		self.project_id = str(uuid.uuid4())
 		self.project_name = "TobiiProGlasses PyController"
@@ -260,6 +261,13 @@ class TobiiGlassesController():
 			ts = jsondata['ts']
 			if( (self.data['pts']['ts'] < ts) and (jsondata['s'] == 0) ):
 				self.data['pts'] = jsondata
+		except:
+			pass
+		try:
+			vts = jsondata['vts']
+			ts = jsondata['ts']
+			if( (self.data['vts']['ts'] < ts) and (jsondata['s'] == 0) ):
+				self.data['vts'] = jsondata
 		except:
 			pass
 		try:
