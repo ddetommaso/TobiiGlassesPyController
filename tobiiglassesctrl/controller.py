@@ -76,7 +76,7 @@ class TobiiGlassesController():
 		if self.address is None:
 			data, address = self.__discover_device__()
 			if address is None:
-				raise ConnectionError("No device found using discovery process"))
+				raise ConnectionError("No device found using discovery process")
 			else:
 				try:
 					self.address = data["ipv4"]
@@ -89,7 +89,7 @@ class TobiiGlassesController():
 				self.iface_name = self.address.split("%")[1]
 		self.__set_URL__(self.udpport, self.address)
 		if self.__connect__() is False:
-			raise ConnectionError("Failed to connect to Tobii device"))
+			raise ConnectionError("Failed to connect to Tobii device")
 
 	def __del__(self):
 		self.close()
