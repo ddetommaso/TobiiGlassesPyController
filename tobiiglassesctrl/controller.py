@@ -26,6 +26,11 @@ import struct
 import sys
 import select
 
+# python2 backwards compatibility for errors
+if sys.version_info[0] < 3:
+	class ConnectionError(BaseException):
+		pass
+
 try:
 	import netifaces
 	TOBII_DISCOVERY_ALLOWED = True
