@@ -47,7 +47,7 @@ TOBII_DATETIME_FORMAT_HUMREAD = '%d/%m/%Y %H:%M:%S'
 
 class TobiiGlassesController():
 
-	def __init__(self, address = None, video_scene = False):
+	def __init__(self, address = None, video_scene = False, timeout = None):
 		self.timeout = 1
 		self.streaming = False
 		self.video_scene = video_scene
@@ -88,18 +88,18 @@ class TobiiGlassesController():
 			else:
 				self.iface_name = self.address.split("%")[1]
 		self.__set_URL__(self.udpport, self.address)
-		if self.__connect__() is False:
+		if self.__connect__(timeout = timeout) is False:
 			raise ConnectionError("Failed to connect to Tobii device")
 
 	def __del__(self):
 		self.close()
 
-	def __connect__(self):
+	def __connect__(self, timeout = None):
 		logging.debug("Connecting to the Tobii Pro Glasses 2 ...")
 		self.data_socket = self.__mksock__()
 		if self.video_scene:
 			self.video_socket = self.__mksock__()
-		res = self.wait_until_status_is_ok()
+		res = self.wait_until_status_is_ok(timeout=timeout)
 		if res is True:
 			logging.debug("Tobii Pro Glasses 2 successful connected!")
 		else:
@@ -532,17 +532,17 @@ class TobiiGlassesController():
 			logging.error("An error occurs trying to stop data streaming")
 
 	def wait_for_recording_status(self, recording_id, status_array = ['init', 'starting',
-	'recording', 'pausing', 'paused', 'stopping', 'stopped', 'done', 'stale', 'failed']):
-		return self.wait_for_status('/api/recordings/' + recording_id + '/status', 'rec_state', status_array)
+	'recording', 'pausing', 'paused', 'stopping', 'stopped', 'done', 'stale', 'failed'], timeout = None):
+		return self.wait_for_status('/api/recordings/' + recording_id + '/status', 'rec_state', status_array, timeout)
 
-	def wait_for_status(self, api_action, key, values):
+	def wait_for_status(self, api_action, key, values, timeout = None):
 		url = self.base_url + api_action
 		running = True
 		while running:
 			req = Request(url)
 			req.add_header('Content-Type', 'application/json')
 			try:
-				response = urlopen(req, None)
+				response = urlopen(req, None, timeout = timeout)
 			except URLError as e:
 				logging.error(e.reason)
 				return -1
@@ -553,9 +553,9 @@ class TobiiGlassesController():
 			time.sleep(1)
 		return json_data[key]
 
-	def wait_until_calibration_is_done(self, calibration_id):
+	def wait_until_calibration_is_done(self, calibration_id, timeout = None):
 		while True:
-			status = self.wait_for_status('/api/calibrations/' + calibration_id + '/status', 'ca_state', ['calibrating', 'calibrated', 'stale', 'uncalibrated', 'failed'])
+			status = self.wait_for_status('/api/calibrations/' + calibration_id + '/status', 'ca_state', ['calibrating', 'calibrated', 'stale', 'uncalibrated', 'failed'], timeout)
 			logging.debug("Calibration status %s" % status)
 			if status == 'uncalibrated' or status == 'stale' or status == 'failed':
 				logging.debug("Calibration %s failed " % calibration_id)
@@ -564,8 +564,8 @@ class TobiiGlassesController():
 				logging.debug("Calibration %s successful " % calibration_id)
 				return True
 
-	def wait_until_status_is_ok(self):
-		status = self.wait_for_status('/api/system/status', 'sys_status', ['ok'])
+	def wait_until_status_is_ok(self, timeout = None):
+		status = self.wait_for_status('/api/system/status', 'sys_status', ['ok'], timeout)
 		if status == 'ok':
 			return True
 		else:
