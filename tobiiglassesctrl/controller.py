@@ -364,6 +364,9 @@ class TobiiGlassesController():
 		json_data = self.__post_request__('/api/recordings', data)
 		return json_data['rec_id']
 
+	def eject_sd(self):
+		self.__get_request__('/api/eject')
+
 	def get_battery_info(self):
 		return ( "Battery info = [ Level: %.2f %% - Remaining Time: %.2f s ]" % (float(self.get_battery_level()), float(self.get_battery_remaining_time())) )
 
@@ -395,6 +398,9 @@ class TobiiGlassesController():
 			except:
 				pass
 		return participant_id
+
+	def identify(self):
+		self.__get_request__('/api/identify')
 
 	def is_recording(self):
 		rec_status = self.get_recording_status()
