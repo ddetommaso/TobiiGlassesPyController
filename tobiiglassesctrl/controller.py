@@ -147,7 +147,10 @@ class TobiiGlassesController():
 						jdata = json.loads(data.decode('utf-8'))
 						logging.debug("From: " + address[0] + " " + str(data))
 						logging.debug("Tobii Pro Glasses found with address: [%s]" % address[0])
-						return (jdata, address[0])
+						addr = address[0]
+						if sys.version_info.major == 3 and sys.version_info.minor >= 8:
+							addr = address[0] + '%' + if_name
+						return (jdata, addr)
 					except:
 						logging.debug("No device found on interface %s" % if_name)
 
