@@ -160,7 +160,10 @@ class TobiiGlassesController():
 	def __get_request__(self, api_action):
 		url = self.base_url + api_action
 		res = urlopen(url).read()
-		data = json.loads(res.decode('utf-8'))
+		try:
+			data = json.loads(res.decode('utf-8'))
+		except json.JSONDecodeError:
+			data = None
 		return data
 
 	def __grab_data__(self, socket):
@@ -184,7 +187,7 @@ class TobiiGlassesController():
 		sock.settimeout(5.0)
 		try:
 			if iptype == socket.AF_INET6:
-				sock.setsockopt(socket.SOL_SOCKET, 25, self.iface_name+'\0')
+				sock.setsockopt(socket.SOL_SOCKET, 25, 1)
 		except socket.error as e:
 			if e.errno == 1:
 				logging.warning("Binding to a network interface is permitted only for root users.")
