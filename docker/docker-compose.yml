@@ -2,16 +2,31 @@ version: "3.6"
 
 services:
 
+    dhcpserver:
+      image: "networkboot/dhcpd"
+      network_mode: "host"
+
+      volumes:
+        - type: bind
+          source: ./dhcpconf
+          target: /data
+
+      command: ${NET_INTERFACE}
+
     tobiiglasses2:
-      image: "python:3.8-buster"
+      build:
+        context: .
+        dockerfile: Dockerfile
+        args:
+          TOBIIGLASSESCTRL_VER: ${TOBIIGLASSESCTRL_VER}
 
       container_name: tobiiglasses2
 
       network_mode: "host"
+
       environment:
         - "DISPLAY=${DISPLAY}"
         - "QT_X11_NO_MITSHM=1"
-        - "PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native"
 
       privileged: true
       stdin_open: true
@@ -20,14 +35,9 @@ services:
       volumes:
         - type: bind
           source: ../
-          target: /home/TobiiGlassesPyController
+          target: /home/docky/TobiiGlassesPyController
 
-        - type: bind
-          source: ./init.sh
-          target: /home/init.sh
+      entrypoint: ["bash"]
 
-        - type: bind
-          source: ${XDG_RUNTIME_DIR}/pulse
-          target: ${XDG_RUNTIME_DIR}/pulse
-
-      entrypoint: ["bash", "/home/init.sh"]
+      depends_on:
+        - dhcpserver
