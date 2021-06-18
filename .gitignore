@@ -96,3 +96,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# dhcp services
+dhcpd.*
