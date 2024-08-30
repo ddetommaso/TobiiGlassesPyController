@@ -16,7 +16,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/ddetommaso/TobiiGlassesPyController/',
     download_url='https://github.com/ddetommaso/TobiiGlassesPyController/archive/2.4.3.tar.gz',
-    install_requires=['netifaces', 'opencv-python==4.2.0.32', 'av==8.0.3'],
+    install_requires=['netifaces', 'opencv-python==4.8.1.78', 'av==8.0.3'],
     author='Davide De Tommaso',
     author_email='dtmdvd@gmail.com',
     keywords=['eye-tracker', 'tobii', 'glasses', 'tobii pro glasses 2', 'tobii glasses', 'eye tracking'],
